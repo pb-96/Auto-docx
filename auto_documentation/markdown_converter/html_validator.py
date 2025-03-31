@@ -27,7 +27,7 @@ class SupportedTags(Enum):
     A = "a"
     BR = "br"
     HR = "hr"
-
+    
 
 class HtmlNode:
     def __init__(self, tag: str) -> None:
