@@ -76,7 +76,7 @@ class HtmlNode:
         return result
 
     def write_to_file(self, file_path: Path):
-        if not file_path.is_file() and not file_path.name.endswith(".html"):
+        if not file_path.is_file() and file_path.suffix != ".html":
             raise ValueError("File path must be a valid HTML file")
 
         with open(file_path, "w") as f:
