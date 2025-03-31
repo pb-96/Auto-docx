@@ -16,6 +16,7 @@ class HtmlToWordConverter:
         self.html_node = html_node
         self.supported_tags = SupportedTags
         self.test_output_path = test_output_path
+        self.doc = Document()
 
         if self.html_file_path and self.html_node is None:
             self.open_html_file()
@@ -46,3 +47,12 @@ class HtmlToWordConverter:
     def convert(self):
         # Process root node
         self.recursive_convert(self.html_node)
+
+    def get_doc(self):
+        ...
+    
+    def convert_to_bytes(self):
+        ...
+
+    def save_to_file(self, file_path: Union[Path, str]):
+        ...
