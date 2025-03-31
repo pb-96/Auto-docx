@@ -16,7 +16,7 @@ class HtmlToPdfConverter:
         self.html_node = html_node
         self.supported_tags = SupportedTags
         self.test_output_path = test_output_path
-        
+
         if self.html_file_path and self.html_node is None:
             self.open_html_file()
 
@@ -33,5 +33,16 @@ class HtmlToPdfConverter:
         raw_data = self.html_file_path.read_text()
         self.html_node = HtmlNode(raw_data)
 
+    def recursive_convert(self, node: HtmlNode):
+        for child in node.children:
+            match child.type:
+                case _:
+                    raise ValueError(f"Unsupported node type: {child.type}")
+
+            # Process Child Node here
+            if child.children:
+                self.recursive_convert(child)
+
     def convert(self):
-        ...
+        # Process root node
+        self.recursive_convert(self.html_node)

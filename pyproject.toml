@@ -3,13 +3,12 @@ name = "auto-documentation"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "pb-96",email = "philip.byrne@faculty.ai"}
+    {name = "Your Name",email = "you@example.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "python-docx (>=1.1.2,<2.0.0)",
-    "pdfservices-sdk (>=4.1.0,<5.0.0)"
+    "python-docx (>=1.1.2,<2.0.0)"
 ]
 
 
