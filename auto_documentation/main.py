@@ -6,5 +6,3 @@ def main_parse():
     # Initialize parser
     parser = argparse.ArgumentParser(description=msg)
     parser.parse_args()
-
-

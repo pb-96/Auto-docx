@@ -149,5 +149,6 @@ class HTMLProcessor:
     def validate(self) -> bool:
         return self.get_tags()
 
+
 if __name__ == "__main__":
     print(SupportedTags._member_map_.get("table"))
