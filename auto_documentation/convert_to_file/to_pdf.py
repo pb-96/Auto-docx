@@ -10,11 +10,13 @@ class HtmlToPdfConverter:
         html_file_path: Union[Path, str, None],
         html_node: Union[HtmlNode, None],
         supported_tags: Union[SupportedTags, Enum],
+        test_output_path: Union[Path, str, None],
     ):
         self.html_file_path = html_file_path
         self.html_node = html_node
         self.supported_tags = SupportedTags
-
+        self.test_output_path = test_output_path
+        
         if self.html_file_path and self.html_node is None:
             self.open_html_file()
 
@@ -32,4 +34,4 @@ class HtmlToPdfConverter:
         self.html_node = HtmlNode(raw_data)
 
     def convert(self):
-        pass
+        ...
