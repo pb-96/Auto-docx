@@ -27,7 +27,7 @@ class SupportedTags(Enum):
     A = "a"
     BR = "br"
     HR = "hr"
-    
+
 
 class HtmlNode:
     def __init__(self, tag: str) -> None:
@@ -38,7 +38,7 @@ class HtmlNode:
         self.parent: Optional[HtmlNode] = None
         self.closed = False
         # Handle potential error here
-        self.tag_type: Optional[SupportedTags] = SupportedTags(self.tag)
+        # self.tag_type: Optional[SupportedTags] = SupportedTags(self.tag)
 
     def __repr__(self) -> str:
         return f"tag={self.tag}, closed={self.closed}, parent={self.parent.tag if self.parent else 'Root'} , Children={self.children}"
@@ -100,8 +100,11 @@ class HTMLProcessor:
     def process_tag(self, char: str) -> bool:
         self.in_tag = False
         self.current_tag += char
-        if re.sub("[^a-z]+", "", self.current_tag) not in self.member_set:
-            raise ValueError(f"Invalid tag: {self.current_tag}")
+        stripped_tag = re.sub("[^a-z0-9]+", "", self.current_tag)
+        if stripped_tag not in self.member_set:
+            raise ValueError(
+                f"Invalid tag: {self.current_tag} stripped_to: {stripped_tag}"
+            )
         elif self.current_tag.startswith("</"):
             if not self.stack:
                 return False
@@ -114,7 +117,10 @@ class HTMLProcessor:
                 return False
 
             last.closed = True
-            self.node_tracker = last.parent
+            if last.parent is not None:
+                self.node_tracker = last.parent
+            else:
+                self.node_tracker = last
 
         elif self.current_tag.startswith("<"):
             current_node = HtmlNode(self.current_tag)
@@ -151,4 +157,8 @@ class HTMLProcessor:
 
 
 if __name__ == "__main__":
-    print(SupportedTags._member_map_.get("table"))
+    html = """
+    <h1>This is the main section of the document.</h1><h2>Table Section</h2><table><tr><th>Header 1</th><th>Header 2</th></tr><tr><td>Cell 1</td><td>Cell 2</td></tr><tr><td>Cell 3</td><td>Cell 4</td></tr><h3>It can have Nested headers</h3><p>This content belongs specifically to the nested header section.<tr></p><p>But can't quite group stuff together yet</tr></p><h2>Special Characters Section</h2><p>This is a paragraph with # and * in the text<tr></p><h2>List Section</h2><ul><li>Item 1 with a # in the text</li><li>Item 2 with * in the text</li></ul></table>"""
+    html_processor = HTMLProcessor(html)
+    r = html_processor.root.display_string()
+    print(r)

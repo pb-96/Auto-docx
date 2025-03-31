@@ -2,7 +2,6 @@ from typing import Dict, List, Generator, Union
 from collections import deque
 import re
 from dataclasses import dataclass, field
-from functools import lru_cache
 
 
 @dataclass
@@ -222,6 +221,7 @@ class MarkDownParser:
 
     def process_table_end(self) -> None:
         self.state.in_table = False
+        self.state.all_text.append("</table>")
 
     def process_in_table(self, last: bool) -> None:
         mapped = (
@@ -240,6 +240,29 @@ class MarkDownParser:
         self.state.all_text.append("</ul>")
         self.state.chars.append(char)
 
+    def list_end(self) -> None:
+        self.state.in_list = False
+        self.state.all_text.append("</ul>")
+
+    def match_char(self, char, start, last):
+        if char == HTMLTag.AT:
+            self.process_end()
+        elif start and char == HTMLTag.PIPE:
+            self.process_table_start()
+        elif len(self.state.chars) > 0 and char == HTMLTag.PIPE:
+            self.process_in_table(last)
+        elif self.list_in_text(char):
+            return
+        elif char in self.mapping:
+            self.append_tags(char)
+        elif start and self.state.in_list:
+            self.process_in_list(char)
+        elif len(self.state.all_tags):
+            self.process_tags()
+            self.state.chars = [char]
+        else:
+            self.state.chars.append(char)
+
     def __parse_text(self, given_text: str) -> Union[str, None]:
         if self.state.last_header:
             self.state.last_header = False
@@ -248,23 +271,12 @@ class MarkDownParser:
         for index, char in enumerate(given_text):
             start = index == 0
             last = is_last(index)
-            if char == HTMLTag.AT:
-                self.process_end()
-            elif start and char == HTMLTag.PIPE:
-                self.process_table_start()
-            elif len(self.state.chars) > 0 and char == HTMLTag.PIPE:
-                self.process_in_table(last)
-            elif self.list_in_text(char):
-                continue
-            elif char in self.mapping:
-                self.append_tags(char)
-            elif start and self.state.in_list:
-                self.process_in_list(char)
-            elif len(self.state.all_tags):
-                self.process_tags()
-                self.state.chars = [char]
-            else:
-                self.state.chars.append(char)
+            if start and char != HTMLTag.PIPE and self.state.in_table:
+                self.process_table_end()
+            if start and char != HTMLTag.ASTERISK and self.state.in_list:
+                self.list_end()
+            # Block match here
+            self.match_char(char, start, last)
             self.state.last_token = char
         if self.state.chars:
             self.process_tags()
@@ -277,13 +289,8 @@ class MarkDownParser:
             for line in given_text.split("\n"):
                 if not line:
                     continue
-
                 self.state.process_line(self.__parse_text(line + HTMLTag.AT))
 
-            if self.state.in_list:
-                self.state.all_text.append("</ul>")
-            if self.state.in_table:
-                self.state.all_text.append("</table>")
             yield self.state.all_text
         finally:
             self.cleanup()
@@ -298,3 +305,31 @@ def parse(text: str, md: Union[MarkDownParser, None] = None):
         for text in line:
             joined += text if text is not None else ""
     return joined
+
+
+if __name__ == "__main__":
+    # An example of a large markdown file
+    text = """
+#This is the main section of the document.
+## Table Section
+| Header 1 | Header 2 |
+| -------- | -------- |
+| Cell 1   | Cell 2   |
+| Cell 3   | Cell 4   |
+
+### It can have Nested headers
+This content belongs specifically to the nested header section.
+But can't quite group stuff together yet
+
+## Special Characters Section
+This is a paragraph with # and * in the text
+
+## List Section
+* Item 1 with a # in the text
+* Item 2 with * in the text
+
+## Do you end lists correctly
+This is a paragraph with # and * in the text after the list section
+"""
+
+    print(parse(text))
