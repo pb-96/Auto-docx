@@ -109,7 +109,7 @@ class MarkdownTest(unittest.TestCase):
         self.assertEqual(parse(table), expected)
 
     def test_complex_markdown_file(self):
-        text = Path("tests/large_markdown_file.md").read_text()
+        text = Path("tests/test_data/large_markdown_file.md").read_text()
         self.assertEqual(
             parse(text),
             """<h1>An example of a large markdown file</h1><p>This is the main section of the document.</p><h2>Table Section</h2><table><tr><th>Header 1</th><th>Header 2</th></tr><tr><td>Cell 1</td><td>Cell 2</td></tr><tr><td>Cell 3</td><td>Cell 4</td></tr></table><h3>It can have Nested headers</h3><p>This content belongs specifically to the nested header section.</p><p>But can't quite group stuff together yet</p><h2>Special Characters Section</h2><p>This is a paragraph with # and * in the text</p><h2>List Section</h2><ul><li>Item 1 with a # in the text</li><li>Item 2 with * in the text</li></ul>""",
