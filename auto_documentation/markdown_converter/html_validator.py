@@ -27,18 +27,23 @@ class SupportedTags(Enum):
     A = "a"
     BR = "br"
     HR = "hr"
+    BODY = "body"
+    HEADER = "header" 
 
+
+MEMBER_SET = {v.value for v in SupportedTags._value2member_map_.values()}
 
 class HtmlNode:
     def __init__(self, tag: str) -> None:
         self.tag = tag
-        self.text = re.sub("[^a-z]+", "", tag)
+        self.text = re.sub("[^a-z0-9]+", "", tag)
+        # This will throw an error if the raw text is not a member of supported tags
+        self.enum_value = SupportedTags(self.text)
         self.content: Union[str, None] = None
         self.children: List[HtmlNode] = []
         self.parent: Optional[HtmlNode] = None
         self.closed = False
-        # Handle potential error here
-        # self.tag_type: Optional[SupportedTags] = SupportedTags(self.tag)
+        
 
     def __repr__(self) -> str:
         return f"tag={self.tag}, closed={self.closed}, parent={self.parent.tag if self.parent else 'Root'} , Children={self.children}"
@@ -125,8 +130,10 @@ class HTMLProcessor:
         elif self.current_tag.startswith("<"):
             current_node = HtmlNode(self.current_tag)
             if self.root is None:
-                self.root = current_node
+                self.root = HtmlNode("<body>")
+                self.root.children.append(current_node)
                 self.node_tracker = current_node
+                self.node_tracker.parent = self.root
             else:
                 self.node_tracker.children.append(current_node)
                 current_node.parent = self.node_tracker
@@ -151,6 +158,7 @@ class HTMLProcessor:
             elif not self.in_tag:
                 self.current_content += char
         return len(self.stack) == 0
+
 
     def validate(self) -> bool:
         return self.get_tags()
