@@ -28,10 +28,11 @@ class SupportedTags(Enum):
     BR = "br"
     HR = "hr"
     BODY = "body"
-    HEADER = "header" 
+    HEADER = "header"
 
 
 MEMBER_SET = {v.value for v in SupportedTags._value2member_map_.values()}
+
 
 class HtmlNode:
     def __init__(self, tag: str) -> None:
@@ -43,7 +44,6 @@ class HtmlNode:
         self.children: List[HtmlNode] = []
         self.parent: Optional[HtmlNode] = None
         self.closed = False
-        
 
     def __repr__(self) -> str:
         return f"tag={self.tag}, closed={self.closed}, parent={self.parent.tag if self.parent else 'Root'} , Children={self.children}"
@@ -81,7 +81,7 @@ class HtmlNode:
         return result
 
     def write_to_file(self, file_path: Path):
-        if not file_path.is_file() and file_path.suffix != ".html":
+        if file_path.suffix != ".html":
             raise ValueError("File path must be a valid HTML file")
 
         with open(file_path, "w") as f:
@@ -159,7 +159,8 @@ class HTMLProcessor:
                 self.current_content += char
         return len(self.stack) == 0
 
-
     def validate(self) -> bool:
         return self.get_tags()
 
+    def __repr__(self):
+        return self.root.display_string()

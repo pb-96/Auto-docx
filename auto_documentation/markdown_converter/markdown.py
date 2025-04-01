@@ -291,7 +291,10 @@ class MarkDownParser:
                 if not line:
                     continue
                 self.state.process_line(self.__parse_text(line + HTMLTag.AT))
-
+            if self.state.in_list:
+                self.state.all_text.append("</ul>")
+            if self.state.in_table:
+                self.state.all_text.append("</table>")
             yield self.state.all_text
         finally:
             self.cleanup()
