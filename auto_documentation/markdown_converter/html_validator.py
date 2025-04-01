@@ -163,10 +163,3 @@ class HTMLProcessor:
     def validate(self) -> bool:
         return self.get_tags()
 
-
-if __name__ == "__main__":
-    html = """
-    <h1>This is the main section of the document.</h1><h2>Table Section</h2><table><tr><th>Header 1</th><th>Header 2</th></tr><tr><td>Cell 1</td><td>Cell 2</td></tr><tr><td>Cell 3</td><td>Cell 4</td></tr><h3>It can have Nested headers</h3><p>This content belongs specifically to the nested header section.<tr></p><p>But can't quite group stuff together yet</tr></p><h2>Special Characters Section</h2><p>This is a paragraph with # and * in the text<tr></p><h2>List Section</h2><ul><li>Item 1 with a # in the text</li><li>Item 2 with * in the text</li></ul></table>"""
-    html_processor = HTMLProcessor(html)
-    r = html_processor.root.display_string()
-    print(r)

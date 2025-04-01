@@ -271,10 +271,11 @@ class MarkDownParser:
         for index, char in enumerate(given_text):
             start = index == 0
             last = is_last(index)
-            if start and char != HTMLTag.PIPE and self.state.in_table:
-                self.process_table_end()
-            if start and char != HTMLTag.ASTERISK and self.state.in_list:
-                self.list_end()
+            if start:
+                if char != HTMLTag.PIPE and self.state.in_table:
+                    self.process_table_end()
+                if char != HTMLTag.ASTERISK and self.state.in_list:
+                    self.list_end()
             # Block match here
             self.match_char(char, start, last)
             self.state.last_token = char
@@ -305,31 +306,3 @@ def parse(text: str, md: Union[MarkDownParser, None] = None):
         for text in line:
             joined += text if text is not None else ""
     return joined
-
-
-if __name__ == "__main__":
-    # An example of a large markdown file
-    text = """
-#This is the main section of the document.
-## Table Section
-| Header 1 | Header 2 |
-| -------- | -------- |
-| Cell 1   | Cell 2   |
-| Cell 3   | Cell 4   |
-
-### It can have Nested headers
-This content belongs specifically to the nested header section.
-But can't quite group stuff together yet
-
-## Special Characters Section
-This is a paragraph with # and * in the text
-
-## List Section
-* Item 1 with a # in the text
-* Item 2 with * in the text
-
-## Do you end lists correctly
-This is a paragraph with # and * in the text after the list section
-"""
-
-    print(parse(text))
