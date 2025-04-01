@@ -4,6 +4,7 @@ from typing import Union
 from auto_documentation.markdown_converter.html_validator import HtmlNode, SupportedTags
 from enum import Enum
 
+
 class HtmlToWordConverter:
     def __init__(
         self,
@@ -94,9 +95,7 @@ class HtmlToWordConverter:
 
     def get_doc(self):
         return self.doc
-    
-    def convert_to_bytes(self):
-        ...
 
-    def save_to_file(self, file_path: Union[Path, str]):
-        ...
+    def convert_to_bytes(self): ...
+
+    def save_to_file(self, file_path: Union[Path, str]): ...
