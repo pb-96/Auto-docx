@@ -3,6 +3,7 @@ from typing import List, Deque, cast, Optional, Union
 from pathlib import Path
 from enum import Enum
 import re
+from collections import deque
 
 
 class SupportedTags(Enum):
@@ -100,7 +101,7 @@ class HTMLProcessor:
         self.stack: Deque[HtmlNode] = deque()
         self.root: Optional[HtmlNode] = None
         self.node_tracker: Optional[HtmlNode] = None
-        self.validate()
+        self.valid = self.validate()
 
     def process_tag(self, char: str) -> bool:
         self.in_tag = False
@@ -140,6 +141,8 @@ class HTMLProcessor:
                 self.node_tracker = current_node
 
             self.stack.append(current_node)
+
+        self.root.closed = True
         self.current_tag = ""
         return True
 
@@ -160,7 +163,45 @@ class HTMLProcessor:
         return len(self.stack) == 0
 
     def validate(self) -> bool:
-        return self.get_tags()
+        all_tags_stack_empty = self.get_tags()
+        validate_further = check_valid(self.root)
+        return all_tags_stack_empty and validate_further
 
     def __repr__(self):
         return self.root.display_string()
+
+
+def compare_nodes_equal(left: HtmlNode, right: HtmlNode) -> bool:
+    if left.tag != right.tag:
+        return False
+
+    if left.children and not right.children:
+        return False
+
+    if right.children and not left.children:
+        return False
+
+    if len(right.children) != len(left.children):
+        return False
+
+    for left_child, right_child in zip(left.children, right.children):
+        if not compare_nodes_equal(left_child, right_child):
+            return False
+
+    return True
+
+
+def check_valid(html_node: HtmlNode) -> bool:
+    if not html_node.closed:
+        return False
+
+    children = html_node.children
+    if children:
+        queue = deque(children)
+        while queue:
+            next_child = queue.popleft()
+            if not next_child.closed:
+                return False
+            for _child in next_child.children:
+                queue.append(_child)
+    return True
