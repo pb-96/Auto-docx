@@ -3,10 +3,10 @@
     "fields": {
       "summary": "Build New Authentication System",
       "description": "Insert example markdown here",
-      "issuetype": {
+      "issueType": {
         "name": "Epic"
       },
-      "issuelinks": [
+      "issueLinks": [
         {
           "type": {
             "name": "Contains",
@@ -17,7 +17,7 @@
             "key": "REQ-101",
             "fields": {
               "summary": "Define OAuth 2.0 Flows",
-              "issuetype": {
+              "issueType": {
                 "name": "Requirement"
               }
             }
@@ -33,7 +33,7 @@
             "key": "REQ-102",
             "fields": {
               "summary": "Implement JWT Token Expiry",
-              "issuetype": {
+              "issueType": {
                 "name": "Requirement"
               }
             }
