@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Union, Set
+from typing import Dict, Any, List, Union, Set, cast
 from jira import JIRA
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
@@ -81,19 +81,15 @@ class IngestJira:
             url_to_query = queue.pop()
             print(url_to_query)
             next_issue = {}
-            next_issue_field = next_issue.get("fields")
+            next_issue_field: Dict = next_issue.get("fields")
             if next_issue_field is None:
                 continue
             summary = next_issue_field.get("summary")
-            if summary is None:
-                continue
             description = next_issue_field.get("description")
-            if description is None:
-                continue
-            issue_type_dict = next_issue_field.get("issueType", {})
+            issue_type_dict = next_issue_field.get("issueType")
             if issue_type_dict is None:
                 continue
-            issue_type = issue_type_dict.get("name")
+            issue_type = cast(dict, issue_type_dict).get("name")
             if issue_type is None:
                 continue
             # Build markdown from summary and description
@@ -107,6 +103,7 @@ class IngestJira:
                     else None
                 ),
                 "ticket_type": current_node.ticket_type,
+                "children": [],
             }
 
             self.add_child_to_queue(next_issue_field, current_node, queue)
