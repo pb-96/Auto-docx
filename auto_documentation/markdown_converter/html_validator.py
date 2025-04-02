@@ -187,8 +187,9 @@ def compare_nodes_equal(left: HtmlNode, right: HtmlNode) -> bool:
     for left_child, right_child in zip(left.children, right.children):
         if not compare_nodes_equal(left_child, right_child):
             return False
-
-    return True
+        
+    # Could most likely just return True -> but this ensures matching
+    return left.tag == right.tag
 
 
 def check_valid(html_node: HtmlNode) -> bool:
