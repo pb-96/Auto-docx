@@ -2,6 +2,7 @@
     "key": "EPIC-1",
     "fields": {
       "summary": "Build New Authentication System",
+      "description": "Insert example markdown here",
       "issuetype": {
         "name": "Epic"
       },
@@ -40,5 +41,5 @@
         }
       ]
     }
-  }
+}
   
