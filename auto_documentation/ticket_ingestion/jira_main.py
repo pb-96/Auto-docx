@@ -31,7 +31,8 @@ class IngestJira:
     def get_issues(self) -> str:
         parent_issue_query = self.get_parent_ticket(self.ticket_tree)
         return parent_issue_query
-
+    
+    @lru_cache
     def find_node_in_ticket_tree(self, ticket_name: str) -> Union[TicketTree, None]:
         if self.ticket_tree.ticket_name == ticket_name:
             return self.ticket_tree
@@ -59,7 +60,6 @@ class IngestJira:
             outward_issue = issue.get("outwardIssue")
             if outward_issue is not None:
                 continue
-                # Add issue to queue -> after checking it is in the correct sequence in TicketTree
             outward_issue: Dict = issue["outward_issue"]
             fields = outward_issue.get("fields")
             if fields is None:
