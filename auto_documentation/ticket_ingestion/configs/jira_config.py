@@ -6,6 +6,8 @@ class JiraConfig(BaseModel):
     # Would need to store the passwords correctly
     email: str
     auth: str
+    project_name: str
+    project_url: str
 
 
 JIRA_INSTANCE = TicketTree(

@@ -1,0 +1,44 @@
+{
+    "key": "EPIC-1",
+    "fields": {
+      "summary": "Build New Authentication System",
+      "issuetype": {
+        "name": "Epic"
+      },
+      "issuelinks": [
+        {
+          "type": {
+            "name": "Contains",
+            "inward": "is contained by",
+            "outward": "contains"
+          },
+          "outwardIssue": {
+            "key": "REQ-101",
+            "fields": {
+              "summary": "Define OAuth 2.0 Flows",
+              "issuetype": {
+                "name": "Requirement"
+              }
+            }
+          }
+        },
+        {
+          "type": {
+            "name": "Contains",
+            "inward": "is contained by",
+            "outward": "contains"
+          },
+          "outwardIssue": {
+            "key": "REQ-102",
+            "fields": {
+              "summary": "Implement JWT Token Expiry",
+              "issuetype": {
+                "name": "Requirement"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+  
