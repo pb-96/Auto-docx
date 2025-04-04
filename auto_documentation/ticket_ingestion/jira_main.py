@@ -24,13 +24,18 @@ class IngestJira:
         self.project = self.jira.project(jira_config.project_name)
         self.parent_ticket_id = parent_ticket_id
         self.ticket_type_to_keys = defaultdict(list)
+        self._node_cache = {}
+
 
     def get_issue_data(self, issue_key: str):
         return self.jira.issue(issue_key).fields
 
-    @lru_cache
     def find_node_in_ticket_tree(self, ticket_type: str) -> Union[TicketTree, None]:
+        if ticket_type in self._node_cache:
+            return self._node_cache[ticket_type]
+
         if self.ticket_tree.ticket_type == ticket_type:
+            self._node_cache[ticket_type] = self.ticket_tree
             return self.ticket_tree
 
         search = deque(self.ticket_tree.child)
@@ -40,9 +45,12 @@ class IngestJira:
                 return next_search
             for child in next_search.child:
                 if child.ticket_type == ticket_type:
+                    self._node_cache[ticket_type] = child
                     return child
                 else:
                     search.append(child)
+
+        return None
 
     def get_next_children_set(self, current_node: TicketTree) -> Set[str]:
         return {child.ticket_type for child in current_node.child}
