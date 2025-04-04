@@ -68,6 +68,8 @@ class IngestJira:
         next_associated_issues = []
         for issue_link in next_issue.issuelinks:
             target_key = self._is_valid_issue_link(issue_link)
+            if target_key is None:
+                continue
             ticket_name = target_key["fields"]["issuetype"]["name"]
             key = target_key.get("key")
             if key and ticket_name and ticket_name in next_children:
