@@ -96,6 +96,7 @@ class IngestJira:
         if associated_children is None:
             return
 
+        associated_children = cast(list, associated_children)
         for child_link in current_node.child:
             associated_children.append(child_link.ticket_type)
 
