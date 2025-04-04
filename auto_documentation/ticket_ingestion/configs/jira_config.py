@@ -18,31 +18,31 @@ JIRA_INSTANCE = TicketTree(
     }
 )
 
-FeatureDescription = TicketTree(
+Requirement = TicketTree(
     **{
         "parent": JIRA_INSTANCE,
-        "ticket_name": "Users can log in",
-        "ticket_type": "FeatureDescription",
+        "ticket_name": "Up Coming Requirement",
+        "ticket_type": "Requirement",
     }
 )
 
-
 NonFunctionalRequirements = TicketTree(
     **{
-        "parent": FeatureDescription,
+        "parent": Requirement,
         "ticket_name": "Users must enter complex password",
-        "ticket_type": "FeatureDescription",
+        "ticket_type": "NonFunctionalReq",
     }
 )
 
 FunctionalRequirements = TicketTree(
     **{
-        "parent": FeatureDescription,
+        "parent": NonFunctionalRequirements,
         "ticket_name": "Must check users enter complex password containing at least one number, special char and have 16 chars in total length",
-        "ticket_type": "FeatureDescription",
+        "ticket_type": "FunctionalReq",
+        "action": "Test",
     }
 )
 
-JIRA_INSTANCE.child.append(FeatureDescription)
-FeatureDescription.child.append(NonFunctionalRequirements)
+JIRA_INSTANCE.child.append(Requirement)
+Requirement.child.append(NonFunctionalRequirements)
 NonFunctionalRequirements.child.append(FunctionalRequirements)

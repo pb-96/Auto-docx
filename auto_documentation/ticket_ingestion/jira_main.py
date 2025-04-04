@@ -1,9 +1,13 @@
 from typing import Dict, Any, List, Union, Set, cast
 from jira import JIRA
-from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
+from auto_documentation.ticket_ingestion.configs.jira_config import (
+    JiraConfig,
+    JIRA_INSTANCE,
+)
 from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from collections import deque
 from functools import lru_cache
+from collections import defaultdict
 
 
 class IngestJira:
@@ -13,92 +17,92 @@ class IngestJira:
         self.jira_config = jira_config
         self.ticket_tree = ticket_tree
         self.formatted_tree: Dict[str, Any] = {}
-
-    def do_auth(self):
         self.jira = JIRA(
             server=self.jira_config.project_url,
             basic_auth=(self.jira_config.email, self.jira_config.auth),
         )
+        self.project = self.jira.project(jira_config.project_name)
+        self.parent_ticket_id = parent_ticket_id
+        self.ticket_type_to_keys = defaultdict(list)
 
-    def get_parent_ticket(self, ticket_tree: TicketTree):
-        jql_query = f'project="{self.jira_config.project_name}" AND summary~"{ticket_tree.ticket_name}" AND issuetype="{ticket_tree.ticket_type}"'
-        return jql_query
+    def get_issue_data(self, issue_key: str):
+        return self.jira.issue(issue_key).fields
 
-    def get_issue_links(self, issue_key: str) -> str:
-        url = f"{self.jira_config.project_url}/rest/api/3/issue/{issue_key}?expand=issuelinks,issuelinks.outwardIssue.fields.issuetype"
-        return url
-
-    def get_issues(self) -> str:
-        parent_issue_query = self.get_parent_ticket(self.ticket_tree)
-        return parent_issue_query
-    
     @lru_cache
-    def find_node_in_ticket_tree(self, ticket_name: str) -> Union[TicketTree, None]:
-        if self.ticket_tree.ticket_name == ticket_name:
+    def find_node_in_ticket_tree(self, ticket_type: str) -> Union[TicketTree, None]:
+        if self.ticket_tree.ticket_type == ticket_type:
             return self.ticket_tree
 
         search = deque(self.ticket_tree.child)
         while search:
             next_search = search.pop()
-            if next_search.ticket_name == ticket_name:
+            if next_search.ticket_type == ticket_type:
                 return next_search
             for child in next_search.child:
-                if child.ticket_name == ticket_name:
+                if child.ticket_type == ticket_type:
                     return child
                 else:
                     search.append(child)
 
-    @lru_cache
     def get_next_children_set(self, current_node: TicketTree) -> Set[str]:
         return {child.ticket_type for child in current_node.child}
 
-    def add_child_to_queue(
-        self, next_issue_field: Dict, current_node: TicketTree, queue: deque
-    ):
-        issue: Dict
-        for issue in next_issue_field.get("issueLinks") or []:
-            outward_issue = issue.get("outwardIssue")
-            if outward_issue is not None:
+    def _is_valid_issue_link(self, issue_link: Any) -> Union[Dict, None]:
+
+        if not hasattr(issue_link, "raw"):
+            return None
+
+        fields = issue_link.raw or {}
+        if "inwardIssue" in fields:
+            return fields.get("inwardIssue") or {}
+        elif "outwardIssue" in fields:
+            return fields.get("outwardIssue") or {}
+        else:
+            return None
+
+    def append_next(self, current_node: TicketTree, queue: deque, next_issue):
+        next_children = self.get_next_children_set(current_node)
+        if not next_children:
+            return
+
+        next_associated_issues = []
+        for issue_link in next_issue.issuelinks:
+            target_key = self._is_valid_issue_link(issue_link)
+            ticket_name = target_key["fields"]["issuetype"]["name"]
+            key = target_key.get("key")
+            if key and ticket_name and ticket_name in next_children:
+                next_associated_issues.append(key)
+
+        queue.extend(next_associated_issues)
+
+    def link_to_parent(self, current_node: TicketTree, key_to_query: str):
+        self.ticket_type_to_keys[current_node.ticket_type].append(key_to_query)
+        if current_node.parent is None:
+            return
+
+        for child_link in self.ticket_type_to_keys[current_node.ticket_type]:
+            associated = self.formatted_tree.get(child_link) or {}
+            if not associated:
                 continue
-            outward_issue: Dict = issue["outward_issue"]
-            fields = outward_issue.get("fields")
-            if fields is None:
+            associated_children = associated.get("children")
+            if associated_children is None:
                 continue
-            summary = outward_issue.get("summary")
-            if summary is None:
-                continue
-            issue_type = outward_issue.get("issueType")
-            if issue_type is None:
-                continue
-            if issue_type in current_node:
-                queue.append(outward_issue["key"])
+            associated_children.append(child_link)
 
     def build_formatted_tree(self) -> None:
-        initial_parent_query: str = self.get_parent_ticket(self.ticket_tree)
-        queue: deque = deque((initial_parent_query,))
-
+        queue: deque = deque((self.parent_ticket_id,))
         while queue:
-            url_to_query = queue.pop()
-            print(url_to_query)
-            next_issue = {}
-            next_issue_field: Dict = next_issue.get("fields")
-            if next_issue_field is None:
-                continue
-            summary = next_issue_field.get("summary")
-            description = next_issue_field.get("description")
-            issue_type_dict = next_issue_field.get("issueType")
-            if issue_type_dict is None:
-                continue
-            issue_type = cast(dict, issue_type_dict).get("name")
-            if issue_type is None:
-                continue
-            # Build markdown from summary and description
-            current_node = self.find_node_in_ticket_tree(issue_type)
+            key_to_query = queue.pop()
+            next_issue = self.get_issue_data(key_to_query)
+            summary = next_issue.summary
+            description = next_issue.description
+            issue_type = next_issue.issuetype
+            current_node = self.find_node_in_ticket_tree(str(issue_type))
             for_markdown = [summary, description]
-            self.formatted_tree[next_issue["key"]] = {
+            self.formatted_tree[key_to_query] = {
                 "markdown": for_markdown,
                 "parent": (
-                    current_node.parent.ticket_name
+                    current_node.parent.ticket_type
                     if current_node.parent is not None
                     else None
                 ),
@@ -106,4 +110,5 @@ class IngestJira:
                 "children": [],
             }
 
-            self.add_child_to_queue(next_issue_field, current_node, queue)
+            self.link_to_parent(current_node, key_to_query)
+            self.append_next(current_node, queue, next_issue)

@@ -11,7 +11,6 @@ class ActionType(str, Enum):
 class TicketTree(BaseModel):
     # Basically this the model that maps from the parent ticket to the test
     parent: Union["TicketTree", None]
-    ticket_name: str
     ticket_type: str
     child: List["TicketTree"] = []
     action: ActionType = ActionType.DESCRIPTION
