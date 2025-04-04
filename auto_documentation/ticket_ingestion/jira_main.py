@@ -23,7 +23,6 @@ class IngestJira:
         )
         self.project = self.jira.project(jira_config.project_name)
         self.parent_ticket_id = parent_ticket_id
-        self.ticket_type_to_keys = defaultdict(list)
         self._node_cache = {}
 
     def get_issue_data(self, issue_key: str):
@@ -85,7 +84,6 @@ class IngestJira:
         queue.extend(next_associated_issues)
 
     def link_to_parent(self, current_node: TicketTree, key_to_query: str):
-        self.ticket_type_to_keys[current_node.ticket_type].append(key_to_query)
         if current_node.parent is None:
             return
 
