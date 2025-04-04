@@ -79,8 +79,11 @@ class IngestJira:
         self.ticket_type_to_keys[current_node.ticket_type].append(key_to_query)
         if current_node.parent is None:
             return
-
+        
         for child_link in self.ticket_type_to_keys[current_node.ticket_type]:
+            if child_link == key_to_query:
+                # this would be adding the current node it's own children
+                continue
             associated = self.formatted_tree.get(child_link) or {}
             if not associated:
                 continue
