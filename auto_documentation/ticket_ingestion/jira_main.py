@@ -90,12 +90,12 @@ class IngestJira:
         associated = self.formatted_tree.get(key_to_query) or {}
         if not associated:
             return
-        
         associated_parent = associated.get("parent") or {}
+        if not associated_parent:
+            return
         associated_children = associated_parent.get("children")
         if associated_children is None:
             return
-
         associated_children = cast(list, associated_children)
         for child_link in current_node.child:
             associated_children.append(child_link.ticket_type)

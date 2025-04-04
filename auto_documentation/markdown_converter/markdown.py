@@ -263,6 +263,12 @@ class MarkDownParser:
         else:
             self.state.chars.append(char)
 
+    def process_html_tag_md(self) -> None:
+        tag = HTMLTag.TAG_PRIORITY.get("".join(self.state.chars))
+        self.state.all_tags.append(tag)
+        self.state.in_header = True
+        self.state.chars.clear()
+
     def __parse_text(self, given_text: str) -> Union[str, None]:
         if self.state.last_header:
             self.state.last_header = False
@@ -276,12 +282,11 @@ class MarkDownParser:
                     self.process_table_end()
                 if char != HTMLTag.ASTERISK and self.state.in_list:
                     self.list_end()
-            if char == "." and "".join(self.state.chars) in HTMLTag.TAG_PRIORITY:
-                print("Parse markdown to comment header", "".join(self.state.chars))
-                continue
-            # Block match here
-            self.match_char(char, start, last)
-            self.state.last_token = char
+            if char == "." and "".join(self.state.chars) in HTMLTag.TAG_PRIORITY.keys():
+                self.process_html_tag_md()
+            else:
+                self.match_char(char, start, last)
+                self.state.last_token = char
         if self.state.chars:
             self.process_tags()
         return self.parse_final_string()
