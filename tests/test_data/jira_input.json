@@ -1,0 +1,42 @@
+{
+    "MBA-15": {
+        "markdown": [
+            "Upcoming Version one release",
+            "h2. Objective\n\nThe goal is to prepare for the upcoming Version one release by ensuring all tests are aligned with the linked requirements.\n\nh2. Context\n\nThis issue focuses on the testing phase for the upcoming release. It highlights the need to verify that all tests correspond to the specified requirements.\n\nh2. Scope\n\n* *Included*: All tests related to the linked requirements.\n* *Not Included*: Any tests not associated with the specified requirements.\n\nh2. Success criteria\n\n* All tests are completed and verified.\n* Each test is linked to the corresponding requirement.\n* No critical issues are found during testing.\n\nh2. Risks and dependencies\n\n* Potential delays in testing could impact the release timeline.\n* Dependencies on the completion of linked requirements before testing can begin.\n\nh2. Other information\n\nN/A"
+        ],
+        "parent": null,
+        "ticket_type": "Epic",
+        "children": []
+    },
+    "MBA-13": {
+        "markdown": [
+            "Create auto docs from auto tests",
+            "h2. Summary\n\nThe issue involves creating automatic documentation from automated tests. This will occur when a testing suite runs associated tests during commits to the master branch.\n\nh2. Context\n\nThe goal is to ensure that documentation is generated automatically as part of the testing process. This will help maintain up-to-date documentation that reflects the current state of the codebase.\n\nh2. Acceptance criteria\n\n* Automatic documentation should be generated from automated tests.\n* Documentation generation should trigger on commits to the master branch.\n* The testing suite must run associated tests successfully.\n\nh2. Other information\n\nN/A"
+        ],
+        "parent": "Epic",
+        "ticket_type": "Requirement",
+        "children": [
+            "MBA-13"
+        ]
+    },
+    "MBA-17": {
+        "markdown": [
+            "User can specify the desired file format",
+            "User can select from pre determined file formats and the output should match the requested file format"
+        ],
+        "parent": "Requirement",
+        "ticket_type": "NonFunctionalReq",
+        "children": [
+            "MBA-17"
+        ]
+    },
+    "MBA-14": {
+        "markdown": [
+            "Docs must show test run in table",
+            "Does the associated test match test ticket name & key"
+        ],
+        "parent": "NonFunctionalReq",
+        "ticket_type": "FunctionalReq",
+        "children": []
+    }
+}
