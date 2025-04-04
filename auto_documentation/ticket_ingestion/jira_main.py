@@ -98,22 +98,27 @@ class IngestJira:
         for child_link in current_node.child:
             associated_children.append(child_link.ticket_type)
 
+    def build_entry(self, next_issue: Any, current_node: TicketTree):
+        return {
+            "markdown": [next_issue.summary, next_issue.description],
+            "parent": (
+                current_node.parent.ticket_type
+                if current_node.parent is not None
+                else None
+            ),
+            "ticket_type": current_node.ticket_type,
+            "children": [],
+        }
+
     def build_formatted_tree(self) -> None:
         queue: deque = deque((self.parent_ticket_id,))
         while queue:
             key_to_query = queue.pop()
             next_issue = self.get_issue_data(key_to_query)
             current_node = self.find_node_in_ticket_tree(str(next_issue.issuetype))
-            self.formatted_tree[key_to_query] = {
-                "markdown": [next_issue.summary, next_issue.description],
-                "parent": (
-                    current_node.parent.ticket_type
-                    if current_node.parent is not None
-                    else None
-                ),
-                "ticket_type": current_node.ticket_type,
-                "children": [],
-            }
+            self.formatted_tree[key_to_query] = self.build_entry(
+                next_issue, current_node
+            )
             self.link_to_parent(current_node, key_to_query)
             self.append_next(current_node, queue, next_issue)
 
