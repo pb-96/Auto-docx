@@ -89,17 +89,15 @@ class IngestJira:
         if current_node.parent is None:
             return
 
-        for child_link in self.ticket_type_to_keys[current_node.ticket_type]:
-            if child_link == key_to_query:
-                # this would be adding the current node it's own children
-                continue
-            associated = self.formatted_tree.get(child_link) or {}
-            if not associated:
-                continue
-            associated_children = associated.get("children")
-            if associated_children is None:
-                continue
-            associated_children.append(child_link)
+        associated = self.formatted_tree.get(key_to_query) or {}
+        if not associated:
+            return
+        associated_children = associated.get("children")
+        if associated_children is None:
+            return
+
+        for child_link in current_node.child:
+            associated_children.append(child_link.ticket_type)
 
     def build_formatted_tree(self) -> None:
         queue: deque = deque((self.parent_ticket_id,))

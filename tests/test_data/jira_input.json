@@ -16,7 +16,7 @@
         "parent": "Epic",
         "ticket_type": "Requirement",
         "children": [
-            "MBA-13"
+            "MBA-17"
         ]
     },
     "MBA-17": {
@@ -27,7 +27,7 @@
         "parent": "Requirement",
         "ticket_type": "NonFunctionalReq",
         "children": [
-            "MBA-17"
+            "MBA-14"
         ]
     },
     "MBA-14": {
