@@ -26,7 +26,6 @@ class IngestJira:
         self.ticket_type_to_keys = defaultdict(list)
         self._node_cache = {}
 
-
     def get_issue_data(self, issue_key: str):
         return self.jira.issue(issue_key).fields
 
@@ -107,13 +106,9 @@ class IngestJira:
         while queue:
             key_to_query = queue.pop()
             next_issue = self.get_issue_data(key_to_query)
-            summary = next_issue.summary
-            description = next_issue.description
-            issue_type = next_issue.issuetype
-            current_node = self.find_node_in_ticket_tree(str(issue_type))
-            for_markdown = [summary, description]
+            current_node = self.find_node_in_ticket_tree(str(next_issue.issuetype))
             self.formatted_tree[key_to_query] = {
-                "markdown": for_markdown,
+                "markdown": [next_issue.summary, next_issue.description],
                 "parent": (
                     current_node.parent.ticket_type
                     if current_node.parent is not None
@@ -122,15 +117,20 @@ class IngestJira:
                 "ticket_type": current_node.ticket_type,
                 "children": [],
             }
-
             self.link_to_parent(current_node, key_to_query)
             self.append_next(current_node, queue, next_issue)
 
     def get_ticket_tree_as_markdown(self):
         # Have to maintain the tree order
         markdown = ""
-        parent = {k: v for k,v in self.formatted_tree.items() if v["parent"] is None}
+        parent = {k: v for k, v in self.formatted_tree.items() if v["parent"] is None}
         if len(parent) > 1:
             raise ValueError("Only one parent ticket can exist")
-        
+
+        summary, content = parent["markdown"]
+        summary = f"# {summary}\n"
+        markdown += summary
+        markdown += content
+        markdown += "\n"
+
         return markdown
