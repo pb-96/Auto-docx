@@ -119,6 +119,10 @@ class IngestJira:
             self.append_next(current_node, queue, next_issue)
 
     def get_ticket_tree_as_markdown(self):
+        # Have to maintain the tree order
+        markdown = ""
+        parent = {k: v for k,v in self.formatted_tree.items() if v["parent"] is None}
+        if len(parent) > 1:
+            raise ValueError("Only one parent ticket can exist")
         
-        for k,v in self.formatted_tree.items():
-            ...
+        return markdown
