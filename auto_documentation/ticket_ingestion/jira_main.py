@@ -90,7 +90,9 @@ class IngestJira:
         associated = self.formatted_tree.get(key_to_query) or {}
         if not associated:
             return
-        associated_children = associated.get("children")
+        
+        associated_parent = associated.get("parent") or {}
+        associated_children = associated_parent.get("children")
         if associated_children is None:
             return
 
