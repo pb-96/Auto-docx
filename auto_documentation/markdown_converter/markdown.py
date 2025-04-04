@@ -276,6 +276,9 @@ class MarkDownParser:
                     self.process_table_end()
                 if char != HTMLTag.ASTERISK and self.state.in_list:
                     self.list_end()
+            if char == "." and "".join(self.state.chars) in HTMLTag.TAG_PRIORITY:
+                print("Parse markdown to comment header", "".join(self.state.chars))
+                continue
             # Block match here
             self.match_char(char, start, last)
             self.state.last_token = char
