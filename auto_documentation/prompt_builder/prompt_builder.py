@@ -4,6 +4,7 @@ from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.utils import find_testable_ticket
 from collections import deque
 
+
 class PromptBuilder:
     def __init__(
         self,
@@ -27,5 +28,3 @@ class PromptBuilder:
             assoicated = self.ticket_ingester.formatted_tree.get(key)
             if assoicated is None:
                 continue
-            
-                

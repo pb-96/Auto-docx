@@ -57,7 +57,7 @@ class IngestJira(GenericIngester):
     def build_entry(self, next_issue: Any, current_node: TicketTree):
         return {
             "markdown": [next_issue.summary, next_issue.description],
-            "parent": (
+            "parent_type": (
                 current_node.parent.ticket_type if current_node.parent else None
             ),
             "ticket_type": current_node.ticket_type,
