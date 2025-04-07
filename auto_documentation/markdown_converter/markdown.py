@@ -298,9 +298,9 @@ class MarkDownParser:
         if self.state.chars:
             self.process_tags()
         if html_tag_to_close:
+            self.state.chars = []
             self.state.all_tags.append(html_tag_to_close)
             self.process_tags()
-
         return self.parse_final_string()
 
     def parse(self, given_text: str) -> Generator[List[str], None, None]:
@@ -330,22 +330,3 @@ def parse(text: str, md: Union[MarkDownParser, None] = None):
         for text in line:
             joined += text if text is not None else ""
     return joined
-
-
-if __name__ == "__main__":
-    example_html = """
-# Upcoming Version one release
-h2. Objective
-
-The goal is to prepare for the upcoming Version one release by ensuring all tests are aligned with the linked requirements.
-
-h2. Bold in writing
-
-* *Included*: All tests related to the linked requirements.
-"""
-    mini_test = """
-* *Included*: All tests related to the linked requirements.
-* *Not Included*: Any tests not associated with the specified requirements.
-"""
-    processor = parse(mini_test)
-    print(processor)
