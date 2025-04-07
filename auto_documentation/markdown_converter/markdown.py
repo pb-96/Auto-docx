@@ -12,7 +12,7 @@ class MarkdownState:
     open_tags: List[str] = field(default_factory=list)
     all_tokens: List[str] = field(default_factory=list)
     all_text: List[str] = field(default_factory=list)
-    last_token: str = ""
+    last_token: Union[str, None] = None
     all_tags = deque()
     in_table: bool = False
     last_header: bool = False
@@ -136,8 +136,12 @@ class MarkDownParser:
                 self.process_header(char)
             case ("#", self.state.last_token):
                 self.__init_header(char)
-            case ("*", self.state.last_token):
+            case ("*", None):
                 self.process_list(char)
+            case ("*", self.state.last_token):
+                self.process_tags()
+                self.state.chars = []
+                self.state.all_tags.append(self.mapping.get("__"))
 
     def process_tags(self) -> None:
         middle_string = "".join(self.state.chars)
@@ -273,22 +277,30 @@ class MarkDownParser:
         if self.state.last_header:
             self.state.last_header = False
             return None
-        is_last = lambda index: index == len(given_text) - 2
+
+        html_tag_to_close = None
         for index, char in enumerate(given_text):
             start = index == 0
-            last = is_last(index)
+            last = index == len(given_text) - 2
             if start:
                 if char != HTMLTag.PIPE and self.state.in_table:
                     self.process_table_end()
                 if char != HTMLTag.ASTERISK and self.state.in_list:
                     self.list_end()
             if char == "." and "".join(self.state.chars) in HTMLTag.TAG_PRIORITY.keys():
-                self.process_html_tag_md()
+                html_tag_to_close = "".join(self.state.chars)
+                self.state.all_tags.append(html_tag_to_close)
+                self.state.chars = []
             else:
                 self.match_char(char, start, last)
-                self.state.last_token = char
+            self.state.last_token = char
+
         if self.state.chars:
             self.process_tags()
+        if html_tag_to_close:
+            self.state.all_tags.append(html_tag_to_close)
+            self.process_tags()
+
         return self.parse_final_string()
 
     def parse(self, given_text: str) -> Generator[List[str], None, None]:
@@ -299,6 +311,7 @@ class MarkDownParser:
                 if not line:
                     continue
                 self.state.process_line(self.__parse_text(line + HTMLTag.AT))
+                self.state.last_token = None
             if self.state.in_list:
                 self.state.all_text.append("</ul>")
             if self.state.in_table:
@@ -317,3 +330,22 @@ def parse(text: str, md: Union[MarkDownParser, None] = None):
         for text in line:
             joined += text if text is not None else ""
     return joined
+
+
+if __name__ == "__main__":
+    example_html = """
+# Upcoming Version one release
+h2. Objective
+
+The goal is to prepare for the upcoming Version one release by ensuring all tests are aligned with the linked requirements.
+
+h2. Bold in writing
+
+* *Included*: All tests related to the linked requirements.
+"""
+    mini_test = """
+* *Included*: All tests related to the linked requirements.
+* *Not Included*: Any tests not associated with the specified requirements.
+"""
+    processor = parse(mini_test)
+    print(processor)

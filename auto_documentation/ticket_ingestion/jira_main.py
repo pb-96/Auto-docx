@@ -161,4 +161,3 @@ class IngestJira:
             result += self.parse_markdown(child_entry, heading_level)
             result += self.process_children(child_key, heading_level + 1)
         return result
-
