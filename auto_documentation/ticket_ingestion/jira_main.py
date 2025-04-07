@@ -18,7 +18,6 @@ class IngestJira(GenericIngester):
             server=self.jira_config.project_url,
             basic_auth=(self.jira_config.email, self.jira_config.auth),
         )
-        self.project = self.jira.project(jira_config.project_name)
         super().__init__(jira_config, ticket_tree, parent_ticket_id)
 
     def get_issue_data(self, issue_key: str):
