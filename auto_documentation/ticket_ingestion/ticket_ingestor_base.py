@@ -3,6 +3,7 @@ from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.ticket_tree.ticket_tree import TicketTree
 from collections import deque, defaultdict
 
+ERROR_MESSAGE = "Subclasses must implement this method"
 
 class GenericIngester:
     
@@ -15,9 +16,6 @@ class GenericIngester:
         self.types_to_keys = defaultdict(list)
         self.build_formatted_tree()
 
-
-    def get_issue_data(self, issue_key: str):
-        raise NotImplementedError("Subclasses must implement this method")
     
     def find_node_in_ticket_tree(self, ticket_type: str) -> Union[TicketTree, None]:
         if ticket_type in self._node_cache:
@@ -99,15 +97,16 @@ class GenericIngester:
         return result  
     
     def build_formatted_tree(self) -> None:
-        raise NotImplementedError("Subclasses must implement this method")
+        raise NotImplementedError(ERROR_MESSAGE)
 
     def append_next(self, current_node: TicketTree, queue: deque, next_issue: Any):
-        raise NotImplementedError("Subclasses must implement this method")
+        raise NotImplementedError(ERROR_MESSAGE)
     
     def build_entry(self, next_issue: Any, current_node: TicketTree):
-        raise NotImplementedError("Subclasses must implement this method")
+        raise NotImplementedError(ERROR_MESSAGE)
     
     def _is_valid_issue_link(self, issue_link: Any) -> Union[Dict, None]:
-        raise NotImplementedError("Subclasses must implement this method")
+        raise NotImplementedError(ERROR_MESSAGE)
     
-    
+    def get_issue_data(self, issue_key: str):
+        raise NotImplementedError(ERROR_MESSAGE)
