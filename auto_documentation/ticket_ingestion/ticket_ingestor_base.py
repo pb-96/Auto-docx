@@ -5,9 +5,12 @@ from collections import deque, defaultdict
 
 ERROR_MESSAGE = "Subclasses must implement this method"
 
+
 class GenericIngester:
-    
-    def __init__(self, jira_config: JiraConfig, ticket_tree: TicketTree, parent_ticket_id: str):
+
+    def __init__(
+        self, jira_config: JiraConfig, ticket_tree: TicketTree, parent_ticket_id: str
+    ):
         self.jira_config = jira_config
         self.ticket_tree = ticket_tree
         self.parent_ticket_id = parent_ticket_id
@@ -16,7 +19,6 @@ class GenericIngester:
         self.types_to_keys = defaultdict(list)
         self.build_formatted_tree()
 
-    
     def find_node_in_ticket_tree(self, ticket_type: str) -> Union[TicketTree, None]:
         if ticket_type in self._node_cache:
             return self._node_cache[ticket_type]
@@ -41,7 +43,7 @@ class GenericIngester:
 
     def get_next_children_set(self, current_node: TicketTree) -> Set[str]:
         return {child.ticket_type for child in current_node.child}
-    
+
     def link_to_parent(self, current_node: TicketTree, key_to_query: str):
         if current_node.parent is None:
             return
@@ -94,19 +96,19 @@ class GenericIngester:
                 continue
             result += self.parse_markdown(child_entry, heading_level)
             result += self.process_children(child_key, heading_level + 1)
-        return result  
-    
+        return result
+
     def build_formatted_tree(self) -> None:
         raise NotImplementedError(ERROR_MESSAGE)
 
     def append_next(self, current_node: TicketTree, queue: deque, next_issue: Any):
         raise NotImplementedError(ERROR_MESSAGE)
-    
+
     def build_entry(self, next_issue: Any, current_node: TicketTree):
         raise NotImplementedError(ERROR_MESSAGE)
-    
+
     def _is_valid_issue_link(self, issue_link: Any) -> Union[Dict, None]:
         raise NotImplementedError(ERROR_MESSAGE)
-    
+
     def get_issue_data(self, issue_key: str):
         raise NotImplementedError(ERROR_MESSAGE)

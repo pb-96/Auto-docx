@@ -10,6 +10,7 @@ from functools import lru_cache
 from collections import defaultdict
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 
+
 class IngestJira(GenericIngester):
     def __init__(
         self, jira_config: JiraConfig, ticket_tree: TicketTree, parent_ticket_id: str
@@ -76,4 +77,3 @@ class IngestJira(GenericIngester):
             )
             self.link_to_parent(current_node, key_to_query)
             self.append_next(current_node, queue, next_issue)
-
