@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, Union, Set, cast
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.ticket_tree.ticket_tree import TicketTree
-from collections import deque
+from collections import deque, defaultdict
 
 
 class GenericIngester:
@@ -10,6 +10,11 @@ class GenericIngester:
         self.jira_config = jira_config
         self.ticket_tree = ticket_tree
         self.parent_ticket_id = parent_ticket_id
+        self.formatted_tree: Dict[str, Any] = {}
+        self._node_cache = {}
+        self.types_to_keys = defaultdict(list)
+        self.build_formatted_tree()
+
 
     def get_issue_data(self, issue_key: str):
         ...
