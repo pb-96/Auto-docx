@@ -24,6 +24,7 @@ class IngestJira:
         self.project = self.jira.project(jira_config.project_name)
         self.parent_ticket_id = parent_ticket_id
         self._node_cache = {}
+        self.types_to_keys = defaultdict(list)
 
     def get_issue_data(self, issue_key: str):
         return self.jira.issue(issue_key).fields
@@ -87,26 +88,16 @@ class IngestJira:
         if current_node.parent is None:
             return
 
-        associated = self.formatted_tree.get(key_to_query) or {}
-        if not associated:
-            return
-        associated_parent = associated.get("parent") or {}
-        if not associated_parent:
-            return
-        associated_children = associated_parent.get("children")
-        if associated_children is None:
-            return
-        associated_children = cast(list, associated_children)
-        for child_link in current_node.child:
-            associated_children.append(child_link.ticket_type)
+        mapped = self.types_to_keys.get(current_node.parent.ticket_type)
+        for key in mapped:
+            associated = self.formatted_tree.get(key)
+            associated["children"].append(key_to_query)
 
     def build_entry(self, next_issue: Any, current_node: TicketTree):
         return {
             "markdown": [next_issue.summary, next_issue.description],
             "parent": (
-                current_node.parent.ticket_type
-                if current_node.parent is not None
-                else None
+                current_node.parent.ticket_type if current_node.parent else None
             ),
             "ticket_type": current_node.ticket_type,
             "children": [],
@@ -117,24 +108,57 @@ class IngestJira:
         while queue:
             key_to_query = queue.pop()
             next_issue = self.get_issue_data(key_to_query)
-            current_node = self.find_node_in_ticket_tree(str(next_issue.issuetype))
+            string_issue_type = str(next_issue.issuetype)
+            self.types_to_keys[string_issue_type].append(key_to_query)
+            current_node = self.find_node_in_ticket_tree(string_issue_type)
             self.formatted_tree[key_to_query] = self.build_entry(
                 next_issue, current_node
             )
             self.link_to_parent(current_node, key_to_query)
             self.append_next(current_node, queue, next_issue)
 
-    def get_ticket_tree_as_markdown(self):
-        # Have to maintain the tree order
-        markdown = ""
-        parent = {k: v for k, v in self.formatted_tree.items() if v["parent"] is None}
-        if len(parent) > 1:
-            raise ValueError("Only one parent ticket can exist")
+    def parse_markdown(self, formated_entry: Dict[str, Any], heading_level: int = 1):
+        """Parse a formatted entry into markdown with appropriate heading level."""
+        title, summary = formated_entry["markdown"]
+        heading_prefix = "#" * heading_level
+        title = f"{heading_prefix} {title}\n"
+        summary = f"{summary}\n\n"
+        return title + summary
 
-        summary, content = parent["markdown"]
-        summary = f"# {summary}\n"
-        markdown += summary
-        markdown += content
-        markdown += "\n"
+    def get_ticket_tree_as_markdown(self) -> str:
+        """Generate markdown representation of the ticket tree using DFS traversal."""
+        # Find the parent ticket
+        parent_keys = self.types_to_keys.get(self.ticket_tree.ticket_type, [])
+
+        if not parent_keys:
+            raise ValueError(
+                f"No parent ticket found of type {self.ticket_tree.ticket_type}"
+            )
+        if len(parent_keys) > 1:
+            raise ValueError(f"Multiple parent tickets found: {parent_keys}")
+
+        parent_ticket = self.formatted_tree.get(parent_keys[0])
+        if not parent_ticket:
+            raise ValueError(
+                f"Parent ticket {parent_keys[0]} not found in formatted tree"
+            )
+
+        markdown = self.parse_markdown(parent_ticket, heading_level=1)
+        markdown += self.process_children(parent_keys[0], heading_level=2)
 
         return markdown
+
+    def process_children(self, parent_key: str, heading_level: int) -> str:
+        result = ""
+        parent_entry = self.formatted_tree.get(parent_key)
+        if not parent_entry:
+            return result
+        children = parent_entry.get("children", [])
+        for child_key in children:
+            child_entry = self.formatted_tree.get(child_key)
+            if not child_entry:
+                continue
+            result += self.parse_markdown(child_entry, heading_level)
+            result += self.process_children(child_key, heading_level + 1)
+        return result
+

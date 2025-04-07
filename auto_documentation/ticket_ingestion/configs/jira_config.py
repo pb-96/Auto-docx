@@ -13,7 +13,6 @@ class JiraConfig(BaseModel):
 JIRA_INSTANCE = TicketTree(
     **{
         "parent": None,
-        "ticket_name": "Up Coming Release",
         "ticket_type": "Epic",
     }
 )
@@ -21,7 +20,6 @@ JIRA_INSTANCE = TicketTree(
 Requirement = TicketTree(
     **{
         "parent": JIRA_INSTANCE,
-        "ticket_name": "Up Coming Requirement",
         "ticket_type": "Requirement",
     }
 )
@@ -29,7 +27,6 @@ Requirement = TicketTree(
 NonFunctionalRequirements = TicketTree(
     **{
         "parent": Requirement,
-        "ticket_name": "Users must enter complex password",
         "ticket_type": "NonFunctionalReq",
     }
 )
@@ -37,7 +34,6 @@ NonFunctionalRequirements = TicketTree(
 FunctionalRequirements = TicketTree(
     **{
         "parent": NonFunctionalRequirements,
-        "ticket_name": "Must check users enter complex password containing at least one number, special char and have 16 chars in total length",
         "ticket_type": "FunctionalReq",
         "action": "Test",
     }
