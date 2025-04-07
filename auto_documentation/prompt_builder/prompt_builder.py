@@ -10,8 +10,13 @@ class PromptBuilder:
         self.ticket_tree = ticket_tree
         self.generic_config = generic_config
         self.ticket_ingester = ticket_ingester(self.generic_config, self.ticket_tree, self.parent_ticket_id)
-
+ 
     def build_prompt(self):
-        ...
+        # Should return testable -> parent -> description -> parent -> description etc...
+        return_dict = {}
+
+
+
+
 
     
