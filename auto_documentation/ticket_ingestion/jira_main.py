@@ -54,18 +54,20 @@ class IngestJira(GenericIngester):
 
         queue.extend(next_associated_issues)
 
-    def build_entry(self, next_issue: Any, current_node: TicketTree):
+    def build_entry(self, next_issue: Any, current_node: TicketTree, last_key: Union[str, None]):
         return {
             "markdown": [next_issue.summary, next_issue.description],
             "parent_type": (
                 current_node.parent.ticket_type if current_node.parent else None
             ),
+            "parent_key": last_key,
             "ticket_type": current_node.ticket_type,
             "children": [],
         }
 
     def build_formatted_tree(self) -> None:
         queue: deque = deque((self.parent_ticket_id,))
+        last_key = None
         while queue:
             key_to_query = queue.pop()
             next_issue = self.get_issue_data(key_to_query)
@@ -73,7 +75,8 @@ class IngestJira(GenericIngester):
             self.types_to_keys[string_issue_type].append(key_to_query)
             current_node = self.find_node_in_ticket_tree(string_issue_type)
             self.formatted_tree[key_to_query] = self.build_entry(
-                next_issue, current_node
+                next_issue, current_node, last_key
             )
             self.link_to_parent(current_node, key_to_query)
             self.append_next(current_node, queue, next_issue)
+            last_key = key_to_query

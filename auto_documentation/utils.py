@@ -14,3 +14,19 @@ def find_testable_ticket(ticket_tree: TicketTree) -> Generator[TicketTree, None,
             yield child
         else:
             yield from find_testable_ticket(child)
+
+
+def is_leaf(ticket_tree: TicketTree) -> bool:
+    return len(ticket_tree.child) == 0 and ticket_tree_is_testable(ticket_tree)
+
+
+# TODO: This would only work if each child has a depth of one -> would miss with multiple children
+# Should adopt a bfs -> i.e search through all the children of the current node
+def check_leaf_is_testable(ticket_tree: TicketTree) -> bool:
+    if is_leaf(ticket_tree):
+        return True
+
+    for child in ticket_tree.child:
+        if check_leaf_is_testable(child):
+            return True
+    return False

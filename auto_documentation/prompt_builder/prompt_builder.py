@@ -1,7 +1,7 @@
 from auto_documentation.ticket_tree.ticket_tree import TicketTree
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
-from auto_documentation.utils import find_testable_ticket
+from auto_documentation.utils import find_testable_ticket, is_leaf
 from collections import deque
 
 
@@ -24,6 +24,9 @@ class PromptBuilder:
     def build_prompt(self):
         # Should return testable -> parent -> description -> parent -> description etc...
         testable_target = [*find_testable_ticket(self.ticket_tree)]
+        if not all((is_leaf(ticket) for ticket in testable_target)):
+            raise ValueError("Testable target is not a leaf")
+        
         for key in testable_target:
             assoicated = self.ticket_ingester.formatted_tree.get(key)
             if assoicated is None:
