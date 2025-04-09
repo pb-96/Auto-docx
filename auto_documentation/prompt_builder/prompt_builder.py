@@ -30,21 +30,35 @@ class PromptBuilder:
 
         ticket_tree_structure = self.ticket_tree.display_relationship()
         parent_ticket_type = self.ticket_tree.ticket_type
-        ticket_descriptions = {}
-        parent_key = next(iter(self.ticket_ingester.types_to_keys[parent_ticket_type]))
-        parent_description = self.ticket_ingester.formatted_tree[parent_key]
-        ticket_descriptions[parent_ticket_type] = parent_description
+        parent_key = self.ticket_ingester.types_to_keys[parent_ticket_type]
+        assert len(parent_key) == 1
+        parent_key = next(iter(parent_key))
 
-        # This should be done for evert ticket that is a leaf and testable
-        for_prompt_builder = {
-            "tree_structure": ticket_tree_structure,
-            "parent_ticket_type": parent_ticket_type,
-            "child_ticket_type": testable_target[0].ticket_type,
-            "ticket_descriptions": ticket_descriptions,
-            "desired_format": "celery",
-            "python_version": "3.11",
-            "test_name": "prompt_test",
-        }
+        for ticket in testable_target:
+            for child_key in self.ticket_ingester.types_to_keys[ticket.ticket_type]:
+                ticket_descriptions = {}
+                upward_order = [child_key]
+                lookup = child_key
+                while lookup != parent_key:
+                    metadata = self.ticket_ingester.formatted_tree[lookup]
+                    ticket_descriptions[lookup] = metadata["description"]
+                    lookup = metadata["parent_key"]
+                    upward_order.append(lookup)
+                    
+                ticket_descriptions[parent_key] = self.ticket_ingester.formatted_tree[parent_key]["description"]
+                upward_order.append(parent_key)
+                upward_order.reverse()
 
-        prompt = build_test_builder_prompt(for_prompt_builder)
-        return prompt
+                # Parse ticket descriptions
+
+                for_prompt_builder = {
+                    "tree_structure": ticket_tree_structure,
+                    "parent_ticket_type": parent_ticket_type,
+                    "child_ticket_type": ticket.ticket_type,
+                    "ticket_descriptions": ticket_descriptions,
+                    "desired_format": "celery",
+                    "python_version": "3.11",
+                    "test_name": "prompt_test",
+                }
+
+                build_test_builder_prompt(for_prompt_builder)
