@@ -22,6 +22,21 @@ class PromptBuilder:
             self.generic_config, self.ticket_tree, self.parent_ticket_id
         )
 
+    def get_ticket_description(self, child_key: str, parent_key: str):
+        ticket_descriptions = {}
+        upward_order = [child_key]
+        lookup = child_key
+        while lookup != parent_key:
+            metadata = self.ticket_ingester.formatted_tree[lookup]
+            ticket_descriptions[lookup] = metadata["description"]
+            lookup = metadata["parent_key"]
+            upward_order.append(lookup)
+            
+        ticket_descriptions[parent_key] = self.ticket_ingester.formatted_tree[parent_key]["description"]
+        upward_order.append(parent_key)
+        upward_order.reverse()
+        return ticket_descriptions, upward_order
+
     def build_prompt(self):
         # Should return testable -> parent -> description -> parent -> description etc...
         testable_target = [*find_testable_ticket(self.ticket_tree)]
@@ -36,21 +51,9 @@ class PromptBuilder:
 
         for ticket in testable_target:
             for child_key in self.ticket_ingester.types_to_keys[ticket.ticket_type]:
-                ticket_descriptions = {}
-                upward_order = [child_key]
-                lookup = child_key
-                while lookup != parent_key:
-                    metadata = self.ticket_ingester.formatted_tree[lookup]
-                    ticket_descriptions[lookup] = metadata["description"]
-                    lookup = metadata["parent_key"]
-                    upward_order.append(lookup)
-                    
-                ticket_descriptions[parent_key] = self.ticket_ingester.formatted_tree[parent_key]["description"]
-                upward_order.append(parent_key)
-                upward_order.reverse()
-
+                ticket_descriptions, upward_order = self.get_ticket_description(child_key, parent_key)
+                print(ticket_descriptions, upward_order)
                 # Parse ticket descriptions
-
                 for_prompt_builder = {
                     "tree_structure": ticket_tree_structure,
                     "parent_ticket_type": parent_ticket_type,
