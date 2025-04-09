@@ -1,3 +1,16 @@
+from typing import TypedDict
+
+
+class TestBuilderPrompt(TypedDict):
+    tree_structure: str
+    parent_ticket_type: str
+    child_ticket_type: str
+    ticket_descriptions: str
+    desired_format: str
+    python_version: str
+    test_name: str
+
+
 TEST_BUILDER_PROMPT = """
 You are a test builder. You are given a ticket tree and a ticket id. You need to build a test for the ticket.
 
@@ -41,8 +54,6 @@ Please name the test function as {test_name}
 # python_version: str
 # test_name: str
 
-def build_test_builder_prompt(
-    **kwargs) -> str:
-    return TEST_BUILDER_PROMPT.format(
-        **kwargs
-    )
+
+def build_test_builder_prompt(_dict: TestBuilderPrompt) -> str:
+    return TEST_BUILDER_PROMPT.format(**_dict)

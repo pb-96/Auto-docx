@@ -54,7 +54,9 @@ class IngestJira(GenericIngester):
 
         queue.extend(next_associated_issues)
 
-    def build_entry(self, next_issue: Any, current_node: TicketTree, last_key: Union[str, None]):
+    def build_entry(
+        self, next_issue: Any, current_node: TicketTree, last_key: Union[str, None]
+    ):
         return {
             "markdown": [next_issue.summary, next_issue.description],
             "parent_type": (
