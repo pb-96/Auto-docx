@@ -3,6 +3,7 @@ from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.utils import find_testable_ticket, is_leaf
+from typing import Dict, cast
 
 
 class PromptBuilder:
@@ -17,9 +18,9 @@ class PromptBuilder:
         self.parent_ticket_id = parent_ticket_id
         self.ticket_tree = ticket_tree
         self.generic_config = generic_config
-        self.ticket_ingester = ticket_ingester(
+        self.ticket_ingester = cast(GenericIngester, ticket_ingester(
             self.generic_config, self.ticket_tree, self.parent_ticket_id
-        )
+        ))
 
     def get_ticket_description(self, child_key: str, parent_key: str):
         ticket_descriptions = {}
@@ -37,6 +38,26 @@ class PromptBuilder:
         upward_order.append(parent_key)
         upward_order.reverse()
         return ticket_descriptions, upward_order
+
+    def build_prompt(
+        self,
+        ticket_descriptions: Dict[str, str],
+        ticket_tree_structure: str,
+        parent_ticket_type: str,
+        child_ticket_type: str,
+        ticket_type: str,
+    ):
+        for_prompt_builder = {
+            "tree_structure": ticket_tree_structure,
+            "parent_ticket_type": parent_ticket_type,
+            "child_ticket_type": ticket_type,
+            "ticket_descriptions": ticket_descriptions,
+            # Make this configurable
+            "desired_format": "celery",
+            "python_version": "3.11",
+            "test_name": "prompt_test",
+        }
+        return for_prompt_builder
 
     def build_prompt(self):
         # Should return testable -> parent -> description -> parent -> description etc...
@@ -56,15 +77,12 @@ class PromptBuilder:
                     child_key, parent_key
                 )
                 print(ticket_descriptions, upward_order)
-                # Parse ticket descriptions
-                for_prompt_builder = {
-                    "tree_structure": ticket_tree_structure,
-                    "parent_ticket_type": parent_ticket_type,
-                    "child_ticket_type": ticket.ticket_type,
-                    "ticket_descriptions": ticket_descriptions,
-                    "desired_format": "celery",
-                    "python_version": "3.11",
-                    "test_name": "prompt_test",
-                }
+                for_prompt_builder = self.build_prompt(
+                    ticket_descriptions,
+                    ticket_tree_structure,
+                    parent_ticket_type,
+                    ticket.ticket_type,
+                    child_key,
+                )
 
                 build_test_builder_prompt(for_prompt_builder)
