@@ -31,8 +31,10 @@ class PromptBuilder:
             ticket_descriptions[lookup] = metadata["description"]
             lookup = metadata["parent_key"]
             upward_order.append(lookup)
-            
-        ticket_descriptions[parent_key] = self.ticket_ingester.formatted_tree[parent_key]["description"]
+
+        ticket_descriptions[parent_key] = self.ticket_ingester.formatted_tree[
+            parent_key
+        ]["description"]
         upward_order.append(parent_key)
         upward_order.reverse()
         return ticket_descriptions, upward_order
@@ -51,7 +53,9 @@ class PromptBuilder:
 
         for ticket in testable_target:
             for child_key in self.ticket_ingester.types_to_keys[ticket.ticket_type]:
-                ticket_descriptions, upward_order = self.get_ticket_description(child_key, parent_key)
+                ticket_descriptions, upward_order = self.get_ticket_description(
+                    child_key, parent_key
+                )
                 print(ticket_descriptions, upward_order)
                 # Parse ticket descriptions
                 for_prompt_builder = {
