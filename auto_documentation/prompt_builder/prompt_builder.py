@@ -175,6 +175,37 @@ class PromptBuilder:
         }
         return p_dict
 
+    def process_ticket(
+        self,
+        child_key: str,
+        parent_key: str,
+        ticket_tree_structure: str,
+        ticket_type: str,
+    ) -> Generator:
+        try:
+            ticket_descriptions, upward_order = self.get_ticket_description(
+                child_key, parent_key
+            )
+            prompt_string = self.build_prompt_string(
+                upward_order, child_key, ticket_descriptions
+            )
+            if self.return_default_prompt:
+                prompt_meta = self.build_prompt_dict(
+                    ticket_descriptions=prompt_string,
+                    ticket_tree_structure=ticket_tree_structure,
+                    parent_ticket_type=parent_key,
+                    ticket_type=ticket_type,
+                    child_key=child_key,
+                )
+                yield child_key, build_test_builder_prompt(prompt_meta)
+            else:
+                # Return the ticket string and the ticket tree structure
+                yield child_key, (prompt_string, ticket_tree_structure)
+
+        except Exception as e:
+            logger.error(f"Error processing ticket {child_key}: {e}")
+            # Continue processing other tickets even if one fails
+
     def build_prompt(self) -> Generator[Tuple[TicketKey, str], None, None]:
         """
         Build prompts for all testable tickets.
@@ -216,6 +247,7 @@ class PromptBuilder:
                 len(parent_keys) == 1
             ), f"Expected exactly one parent key, got {len(parent_keys)}"
             parent_key = next(iter(parent_keys))
+
             for ticket in testable_target:
                 ticket_type = ticket.ticket_type
                 if ticket_type not in self.ticket_ingester.types_to_keys:
@@ -224,30 +256,9 @@ class PromptBuilder:
                     )
                     continue
                 for child_key in self.ticket_ingester.types_to_keys[ticket_type]:
-                    try:
-                        ticket_descriptions, upward_order = self.get_ticket_description(
-                            child_key, parent_key
-                        )
-                        prompt_string = self.build_prompt_string(
-                            upward_order, child_key, ticket_descriptions
-                        )
-                        if self.return_default_prompt:
-                            prompt_meta = self.build_prompt_dict(
-                                ticket_descriptions=prompt_string,
-                                ticket_tree_structure=ticket_tree_structure,
-                                parent_ticket_type=parent_key,
-                                ticket_type=ticket_type,
-                                child_key=child_key,
-                            )
-                            yield child_key, build_test_builder_prompt(prompt_meta)
-                        else:
-                            # Return the ticket string and the ticket tree structure
-                            yield child_key, (prompt_string, ticket_tree_structure)
-
-                    except Exception as e:
-                        logger.error(f"Error processing ticket {child_key}: {e}")
-                        # Continue processing other tickets even if one fails
-                        continue
+                    yield from self.process_ticket(
+                        child_key, parent_key, ticket_tree_structure, ticket_type
+                    )
 
         except Exception as e:
             logger.error(f"Error building prompt: {e}")
