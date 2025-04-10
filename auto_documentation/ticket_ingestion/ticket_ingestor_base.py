@@ -2,6 +2,7 @@ from typing import Dict, Any, List, Union, Set, cast
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from collections import deque, defaultdict
+from auto_documentation.ticket_ingestion.configs.jira_config import TicketDict
 
 ERROR_MESSAGE = "Subclasses must implement this method"
 
@@ -53,9 +54,9 @@ class GenericIngester:
             associated = self.formatted_tree.get(key)
             associated["children"].append(key_to_query)
 
-    def parse_markdown(self, formated_entry: Dict[str, Any], heading_level: int = 1):
+    def parse_markdown(self, formatted_entry: Dict[str, Any], heading_level: int = 1):
         """Parse a formatted entry into markdown with appropriate heading level."""
-        title, summary = formated_entry["markdown"]
+        title, summary = formatted_entry["title"], formatted_entry["description"]
         heading_prefix = "#" * heading_level
         title = f"{heading_prefix} {title}\n"
         summary = f"{summary}\n\n"
@@ -104,7 +105,7 @@ class GenericIngester:
     def append_next(self, current_node: TicketTree, queue: deque, next_issue: Any):
         raise NotImplementedError(ERROR_MESSAGE)
 
-    def build_entry(self, next_issue: Any, current_node: TicketTree):
+    def build_entry(self, next_issue: Any, current_node: TicketTree) -> TicketDict:
         raise NotImplementedError(ERROR_MESSAGE)
 
     def _is_valid_issue_link(self, issue_link: Any) -> Union[Dict, None]:

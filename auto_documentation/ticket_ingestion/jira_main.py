@@ -3,6 +3,7 @@ from jira import JIRA
 from auto_documentation.ticket_ingestion.configs.jira_config import (
     JiraConfig,
     JIRA_INSTANCE,
+    TicketDict,
 )
 from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from collections import deque
@@ -16,9 +17,11 @@ class IngestJira(GenericIngester):
         self, jira_config: JiraConfig, ticket_tree: TicketTree, parent_ticket_id: str
     ):
         self.jira = JIRA(
-            server=self.jira_config.project_url,
-            basic_auth=(self.jira_config.email, self.jira_config.auth),
+            server=jira_config.project_url,
+            basic_auth=(jira_config.email, jira_config.auth),
         )
+        self.project = self.jira.project(jira_config.project_name)
+
         super().__init__(jira_config, ticket_tree, parent_ticket_id)
 
     def get_issue_data(self, issue_key: str):
@@ -57,8 +60,9 @@ class IngestJira(GenericIngester):
     def build_entry(
         self, next_issue: Any, current_node: TicketTree, last_key: Union[str, None]
     ):
-        return {
-            "markdown": [next_issue.summary, next_issue.description],
+        ticket_dict: TicketDict = {
+            "title": next_issue.summary,
+            "description": next_issue.description,
             "parent_type": (
                 current_node.parent.ticket_type if current_node.parent else None
             ),
@@ -66,6 +70,7 @@ class IngestJira(GenericIngester):
             "ticket_type": current_node.ticket_type,
             "children": [],
         }
+        return ticket_dict
 
     def build_formatted_tree(self) -> None:
         queue: deque = deque((self.parent_ticket_id,))

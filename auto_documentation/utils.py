@@ -1,5 +1,6 @@
 from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
-from typing import Generator
+from typing import Generator, Dict, Any
+import jsonlines
 
 
 def ticket_tree_is_testable(ticket_tree: TicketTree) -> bool:
@@ -30,3 +31,8 @@ def check_leaf_is_testable(ticket_tree: TicketTree) -> bool:
         if check_leaf_is_testable(child):
             return True
     return False
+
+
+def write_to_jsonl(data: Dict[str, Any], file_path: str):
+    with jsonlines.open(file_path, mode="w") as writer:
+        writer.write(data)

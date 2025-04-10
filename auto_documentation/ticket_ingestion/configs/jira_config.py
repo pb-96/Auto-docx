@@ -1,5 +1,15 @@
 from pydantic import BaseModel
 from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
+from typing import TypedDict, Union, List
+
+
+class TicketDict(TypedDict):
+    title: str
+    description: str
+    parent_type: Union[str, None]
+    parent_key: Union[str, None]
+    ticket_type: str
+    children: List[str]
 
 
 class JiraConfig(BaseModel):
