@@ -165,15 +165,15 @@ class PromptBuilder:
         ticket_type: str,
         child_key: str,
     ) -> PromptDict:
-        return {
+        p_dict: PromptDict = {
             "tree_structure": ticket_tree_structure,
             "parent_ticket_type": parent_ticket_type,
             "child_ticket_type": ticket_type,
             "ticket_descriptions": ticket_descriptions,
             "test_name": child_key,
-            "desired_format": "celery",
             "python_version": "3.11",
         }
+        return p_dict
 
     def build_prompt(self) -> Generator[Tuple[TicketKey, str], None, None]:
         """

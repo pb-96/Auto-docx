@@ -6,7 +6,6 @@ class TestBuilderPrompt(TypedDict):
     parent_ticket_type: str
     child_ticket_type: str
     ticket_descriptions: str
-    desired_format: str
     python_version: str
     test_name: str
 
@@ -19,10 +18,9 @@ You are given a tree structure where the parent structure is as below -> with th
 Where the parent ticket type is {parent_ticket_type} and the child ticket type is {child_ticket_type}
 These are the ticket descriptions for the tickets from parent to leaf
 {ticket_descriptions}
-You need to build a test for the ticket.
+You need to build a test for the child ticket.
 You need to build a test that is as close to the ticket description as possible.
-Please use Celery syntax for the test. 
-In this flavour using the {desired_format} format.
+Please use the python library Celery for this test.
 Please give the the output using the following format ->
 You should return the test using python {python_version} code.
 Please return the test in a single function 
