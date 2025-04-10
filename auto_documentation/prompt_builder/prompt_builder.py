@@ -241,7 +241,8 @@ class PromptBuilder:
                             )
                             yield child_key, build_test_builder_prompt(prompt_meta)
                         else:
-                            yield child_key, prompt_string
+                            # Return the ticket string and the ticket tree structure
+                            yield child_key, (prompt_string, ticket_tree_structure)
 
                     except Exception as e:
                         logger.error(f"Error processing ticket {child_key}: {e}")
