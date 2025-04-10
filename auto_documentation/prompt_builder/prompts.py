@@ -20,7 +20,7 @@ These are the ticket descriptions for the tickets from parent to leaf
 {ticket_descriptions}
 You need to build a test for the child ticket.
 You need to build a test that is as close to the ticket description as possible.
-Please use the python library Celery for this test.
+Please use the python library pytest-bdd for this test.
 Please give the the output using the following format ->
 You should return the test using python {python_version} code.
 Please return the test in a single function 
