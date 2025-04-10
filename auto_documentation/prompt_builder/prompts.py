@@ -24,7 +24,6 @@ You need to build a test that is as close to the ticket description as possible.
 Please use Celery syntax for the test. 
 In this flavour using the {desired_format} format.
 Please give the the output using the following format ->
-@Output Format
 You should return the test using python {python_version} code.
 Please return the test in a single function 
 Please name the test function as {test_name}

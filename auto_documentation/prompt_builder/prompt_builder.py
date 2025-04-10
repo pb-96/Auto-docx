@@ -12,6 +12,7 @@ class PromptBuilder:
         parent_ticket_id: str,
         ticket_tree: TicketTree,
         ticket_ingester: GenericIngester,
+        # Make a generic config
         generic_config: JiraConfig,
     ):
         self.prompt = {}
