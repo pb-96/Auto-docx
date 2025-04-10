@@ -3,87 +3,285 @@ from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.utils import find_testable_ticket, is_leaf
-from typing import Dict, cast
+from typing import cast, Dict, List, Tuple, Any, Generator, TypeVar, Optional
+from dataclasses import dataclass
+import logging
 
+# Set up logging
+logger = logging.getLogger(__name__)
+
+# Constants
+SEPARATOR = "*" * 100
+
+# Type definitions
+TicketKey = str
+TicketType = str
+TicketDescription = Dict[str, str]
+TicketDescriptions = Dict[TicketKey, TicketDescription]
+PromptDict = Dict[str, Any]
+
+@dataclass
+class TicketMetadata:
+    """Represents metadata for a ticket."""
+    title: str
+    description: str
+    ticket_type: str
+    parent_key: Optional[str] = None
+
+class PromptBuilderError(Exception):
+    """Base exception for PromptBuilder errors."""
+    pass
+
+class InvalidTicketStructureError(PromptBuilderError):
+    """Raised when the ticket structure is invalid."""
+    pass
 
 class PromptBuilder:
+    """
+    Builds prompts for test generation based on ticket information.
+    
+    This class takes ticket information from various sources and constructs
+    prompts that can be used to generate tests.
+    """
+    
     def __init__(
         self,
         parent_ticket_id: str,
         ticket_tree: TicketTree,
         ticket_ingester: GenericIngester,
-        # Make a generic config
         generic_config: JiraConfig,
+        output_file_path: str,
     ):
-        self.prompt = {}
+        """
+        Initialize the PromptBuilder.
+        
+        Args:
+            parent_ticket_id: The ID of the parent ticket
+            ticket_tree: The ticket tree structure
+            ticket_ingester: The ticket ingester to use
+            generic_config: Configuration for the ticket ingester
+            output_file_path: Path to write output to
+        """
+        self.prompt: Dict[str, Any] = {}
         self.parent_ticket_id = parent_ticket_id
         self.ticket_tree = ticket_tree
         self.generic_config = generic_config
-        self.ticket_ingester = cast(GenericIngester, ticket_ingester(
-            self.generic_config, self.ticket_tree, self.parent_ticket_id
-        ))
+        self.ticket_ingester = cast(
+            GenericIngester,
+            ticket_ingester(
+                self.generic_config, self.ticket_tree, self.parent_ticket_id
+            ),
+        )
+        self.output_file_path = output_file_path
+        
+        # Validate inputs
+        if not parent_ticket_id:
+            raise PromptBuilderError("Parent ticket ID cannot be empty")
+        if not output_file_path:
+            raise PromptBuilderError("Output file path cannot be empty")
 
-    def get_ticket_description(self, child_key: str, parent_key: str):
-        ticket_descriptions = {}
-        upward_order = [child_key]
+    def get_ticket_description(self, child_key: TicketKey, parent_key: TicketKey) -> Tuple[TicketDescriptions, List[TicketKey]]:
+        """
+        Get descriptions for tickets in the hierarchy from child to parent.
+        
+        Args:
+            child_key: The key of the child ticket
+            parent_key: The key of the parent ticket
+            
+        Returns:
+            A tuple containing:
+            - A dictionary mapping ticket keys to their descriptions
+            - A list of ticket keys in order from parent to child
+            
+        Raises:
+            InvalidTicketStructureError: If the ticket structure is invalid
+        """
+        ticket_descriptions: TicketDescriptions = {}
+        upward_order: List[TicketKey] = [child_key]
         lookup = child_key
-        while lookup != parent_key:
-            metadata = self.ticket_ingester.formatted_tree[lookup]
-            ticket_descriptions[lookup] = metadata["description"]
-            lookup = metadata["parent_key"]
-            upward_order.append(lookup)
+        
+        try:
+            while lookup != parent_key:
+                if lookup not in self.ticket_ingester.formatted_tree:
+                    raise InvalidTicketStructureError(f"Ticket {lookup} not found in formatted tree")
+                    
+                metadata = self.ticket_ingester.formatted_tree[lookup]
+                ticket_descriptions[lookup] = {
+                    "title": metadata["title"],
+                    "description": metadata["description"],
+                    "ticket_type": metadata["ticket_type"],
+                }
+                
+                if "parent_key" not in metadata:
+                    raise InvalidTicketStructureError(f"No parent key found for ticket {lookup}")
+                    
+                lookup = metadata["parent_key"]
+                upward_order.append(lookup)
+                
+                # Prevent infinite loops
+                if len(upward_order) > 100:  # Arbitrary limit to prevent infinite loops
+                    raise InvalidTicketStructureError("Circular reference detected in ticket hierarchy")
 
-        ticket_descriptions[parent_key] = self.ticket_ingester.formatted_tree[
-            parent_key
-        ]["description"]
-        upward_order.append(parent_key)
-        upward_order.reverse()
-        return ticket_descriptions, upward_order
+            if parent_key not in self.ticket_ingester.formatted_tree:
+                raise InvalidTicketStructureError(f"Parent ticket {parent_key} not found in formatted tree")
+                
+            parent_metadata = self.ticket_ingester.formatted_tree[parent_key]
+            ticket_descriptions[parent_key] = {
+                "title": parent_metadata["title"],
+                "description": parent_metadata["description"],
+                "ticket_type": parent_metadata["ticket_type"],
+            }
+            upward_order.append(parent_key)
+            upward_order.reverse()
+            return ticket_descriptions, upward_order
+            
+        except KeyError as e:
+            raise InvalidTicketStructureError(f"Missing key in ticket metadata: {e}")
+        except Exception as e:
+            logger.error(f"Error getting ticket description: {e}")
+            raise PromptBuilderError(f"Failed to get ticket description: {e}")
 
-    def build_prompt(
+    def build_prompt_string(self, upward_order: List[TicketKey], child_key: TicketKey, ticket_descriptions: TicketDescriptions) -> str:
+        """
+        Build a string representation of the prompt.
+        
+        Args:
+            upward_order: List of ticket keys in order from parent to child
+            child_key: The key of the child ticket
+            ticket_descriptions: Dictionary mapping ticket keys to their descriptions
+            
+        Returns:
+            A formatted string representation of the prompt
+        """
+        prompt_parts = []
+        
+        for key in upward_order:
+            is_tester = key == child_key
+            meta = ticket_descriptions[key]
+            
+            prompt_parts.extend([
+                SEPARATOR,
+                f"This is a {'testable ticket' if is_tester else 'parent'} of type {meta['ticket_type']}",
+                "This is what the test you write is based on" if is_tester else "",
+                SEPARATOR,
+                f"This is the ticket name: {meta['title']}",
+                SEPARATOR,
+                meta["description"],
+                ""  # Add a blank line between tickets
+            ])
+            
+        return "\n".join(filter(None, prompt_parts))  # Filter out empty strings
+
+    def build_prompt_dict(
         self,
-        ticket_descriptions: Dict[str, str],
+        ticket_descriptions: str,
         ticket_tree_structure: str,
         parent_ticket_type: str,
-        child_ticket_type: str,
         ticket_type: str,
-    ):
-        for_prompt_builder = {
+        child_key: str,
+    ) -> PromptDict:
+        """
+        Build a dictionary containing prompt metadata.
+        
+        Args:
+            ticket_descriptions: String representation of ticket descriptions
+            ticket_tree_structure: String representation of the ticket tree structure
+            parent_ticket_type: Type of the parent ticket
+            ticket_type: Type of the ticket
+            child_key: Key of the child ticket
+            
+        Returns:
+            A dictionary containing prompt metadata
+        """
+        return {
             "tree_structure": ticket_tree_structure,
             "parent_ticket_type": parent_ticket_type,
             "child_ticket_type": ticket_type,
             "ticket_descriptions": ticket_descriptions,
-            # Make this configurable
+            "test_name": child_key,
             "desired_format": "celery",
             "python_version": "3.11",
-            "test_name": "prompt_test",
         }
-        return for_prompt_builder
 
-    def build_prompt(self):
-        # Should return testable -> parent -> description -> parent -> description etc...
-        testable_target = [*find_testable_ticket(self.ticket_tree)]
-        if not all((is_leaf(ticket) for ticket in testable_target)):
-            raise ValueError("Testable target is not a leaf")
+    def build_prompt(self) -> Generator[Tuple[TicketKey, str], None, None]:
+        """
+        Build prompts for all testable tickets.
+        
+        This method finds all testable tickets in the ticket tree, builds descriptions
+        for each ticket and its parents, and generates prompts for test generation.
+        
+        Yields:
+            Tuples containing:
+            - The key of the testable ticket
+            - The generated prompt string
+            
+        Raises:
+            InvalidTicketStructureError: If the ticket structure is invalid
+            PromptBuilderError: If there's an error building the prompt
+        """
+        try:
+            # Find all testable tickets
+            testable_target = [*find_testable_ticket(self.ticket_tree)]
+            
+            if not testable_target:
+                logger.warning("No testable tickets found")
+                return
+                
+            if not all((is_leaf(ticket) for ticket in testable_target)):
+                raise InvalidTicketStructureError("Testable target is not a leaf")
 
-        ticket_tree_structure = self.ticket_tree.display_relationship()
-        parent_ticket_type = self.ticket_tree.ticket_type
-        parent_key = self.ticket_ingester.types_to_keys[parent_ticket_type]
-        assert len(parent_key) == 1
-        parent_key = next(iter(parent_key))
+            # Get ticket tree structure
+            ticket_tree_structure = self.ticket_tree.display_relationship()
+            parent_ticket_type = self.ticket_tree.ticket_type
+            
+            # Get parent key
+            if parent_ticket_type not in self.ticket_ingester.types_to_keys:
+                raise InvalidTicketStructureError(f"Parent ticket type {parent_ticket_type} not found")
+                
+            parent_keys = self.ticket_ingester.types_to_keys[parent_ticket_type]
+            if not parent_keys:
+                raise InvalidTicketStructureError(f"No parent keys found for type {parent_ticket_type}")
+                
+            assert len(parent_keys) == 1, f"Expected exactly one parent key, got {len(parent_keys)}"
+            parent_key = next(iter(parent_keys))
 
-        for ticket in testable_target:
-            for child_key in self.ticket_ingester.types_to_keys[ticket.ticket_type]:
-                ticket_descriptions, upward_order = self.get_ticket_description(
-                    child_key, parent_key
-                )
-                print(ticket_descriptions, upward_order)
-                for_prompt_builder = self.build_prompt(
-                    ticket_descriptions,
-                    ticket_tree_structure,
-                    parent_ticket_type,
-                    ticket.ticket_type,
-                    child_key,
-                )
-
-                build_test_builder_prompt(for_prompt_builder)
+            # Process each testable ticket
+            for ticket in testable_target:
+                ticket_type = ticket.ticket_type
+                if ticket_type not in self.ticket_ingester.types_to_keys:
+                    logger.warning(f"Ticket type {ticket_type} not found in types_to_keys")
+                    continue
+                    
+                for child_key in self.ticket_ingester.types_to_keys[ticket_type]:
+                    try:
+                        # Get ticket descriptions
+                        ticket_descriptions, upward_order = self.get_ticket_description(
+                            child_key, parent_key
+                        )
+                        
+                        # Build prompt string
+                        prompt_string = self.build_prompt_string(
+                            upward_order, child_key, ticket_descriptions
+                        )
+                        
+                        # Build prompt metadata
+                        prompt_meta = self.build_prompt_dict(
+                            ticket_descriptions=prompt_string,
+                            ticket_tree_structure=ticket_tree_structure,
+                            parent_ticket_type=parent_key,
+                            ticket_type=ticket_type,
+                            child_key=child_key
+                        )
+                        
+                        # Build and yield the prompt
+                        yield child_key, build_test_builder_prompt(prompt_meta)
+                        
+                    except Exception as e:
+                        logger.error(f"Error processing ticket {child_key}: {e}")
+                        # Continue processing other tickets even if one fails
+                        continue
+                        
+        except Exception as e:
+            logger.error(f"Error building prompt: {e}")
+            raise PromptBuilderError(f"Failed to build prompt: {e}")
+                
