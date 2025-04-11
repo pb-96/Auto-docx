@@ -89,30 +89,14 @@ class PromptBuilder:
 
         try:
             while lookup != parent_key:
-                if lookup not in self.ticket_ingester.formatted_tree:
-                    raise InvalidTicketStructureError(
-                        f"Ticket {lookup} not found in formatted tree"
-                    )
-
                 metadata = self.ticket_ingester.formatted_tree[lookup]
                 ticket_descriptions[lookup] = {
                     "title": metadata["title"],
                     "description": metadata["description"],
                     "ticket_type": metadata["ticket_type"],
                 }
-
-                if "parent_key" not in metadata:
-                    raise InvalidTicketStructureError(
-                        f"No parent key found for ticket {lookup}"
-                    )
-
                 lookup = metadata["parent_key"]
                 upward_order.append(lookup)
-
-            if parent_key not in self.ticket_ingester.formatted_tree:
-                raise InvalidTicketStructureError(
-                    f"Parent ticket {parent_key} not found in formatted tree"
-                )
 
             parent_metadata = self.ticket_ingester.formatted_tree[parent_key]
             ticket_descriptions[parent_key] = {
