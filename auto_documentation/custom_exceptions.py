@@ -1,5 +1,3 @@
-
-
 class PromptBuilderError(Exception):
     """Base exception for PromptBuilder errors."""
 

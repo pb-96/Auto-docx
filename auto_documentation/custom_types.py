@@ -2,7 +2,7 @@ from typing import TypedDict, Optional, Dict, Any
 from pydantic import BaseModel
 from typing import List, Union, Literal
 from enum import Enum
-
+from pathlib import Path
 
 # Constants
 SEPARATOR = f'{"*" * 100}\n'
@@ -13,6 +13,8 @@ TicketType = str
 TicketDescription = Dict[str, str]
 TicketDescriptions = Dict[TicketKey, TicketDescription]
 PromptDict = Dict[str, Any]
+FileType = Union[str, Path, None]
+
 
 class TicketMetadata(TypedDict):
     title: str
@@ -24,6 +26,16 @@ class TicketMetadata(TypedDict):
 class ActionType(str, Enum):
     DESCRIPTION = "Description"
     TEST = "Test"
+
+
+class RunType(str, Enum):
+    TEST_CREATE = "CREATE"
+    GEN_DOCS = "GENERATE"
+
+
+class TicketSource(str, Enum):
+    # List all supported ticket ingestion sources
+    JIRA = "JIRA"
 
 
 class TicketDict(TypedDict):
@@ -43,7 +55,6 @@ class JiraConfig(BaseModel):
     project_url: str
 
 
-
 class TestBuilderPrompt(TypedDict):
     tree_structure: str
     parent_ticket_type: str
@@ -51,7 +62,6 @@ class TestBuilderPrompt(TypedDict):
     ticket_descriptions: str
     python_version: str
     test_name: str
-
 
 
 class TicketTree(BaseModel):

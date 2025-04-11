@@ -1,4 +1,4 @@
-from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
+from auto_documentation.custom_types import TicketTree
 from typing import Generator, Dict, Any
 import jsonlines
 
@@ -36,3 +36,7 @@ def check_leaf_is_testable(ticket_tree: TicketTree) -> bool:
 def write_to_jsonl(data: Dict[str, Any], file_path: str):
     with jsonlines.open(file_path, mode="w") as writer:
         writer.write(data)
+
+
+def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree:
+    ...

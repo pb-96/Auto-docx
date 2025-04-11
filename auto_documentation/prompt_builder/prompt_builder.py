@@ -3,13 +3,22 @@ from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.utils import find_testable_ticket, is_leaf
-from auto_documentation.custom_types import TicketKey, TicketDescriptions, PromptDict, SEPARATOR
-from auto_documentation.custom_exceptions import PromptBuilderError, InvalidTicketStructureError
+from auto_documentation.custom_types import (
+    TicketKey,
+    TicketDescriptions,
+    PromptDict,
+    SEPARATOR,
+)
+from auto_documentation.custom_exceptions import (
+    PromptBuilderError,
+    InvalidTicketStructureError,
+)
 from typing import cast, Dict, List, Tuple, Any, Generator, TypeVar, Optional
 from dataclasses import dataclass
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class PromptBuilder:
     """
