@@ -1,23 +1,4 @@
-from pydantic import BaseModel
-from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
-from typing import TypedDict, Union, List
-
-
-class TicketDict(TypedDict):
-    title: str
-    description: str
-    parent_type: Union[str, None]
-    parent_key: Union[str, None]
-    ticket_type: str
-    children: List[str]
-
-
-class JiraConfig(BaseModel):
-    # Would need to store the passwords correctly
-    email: str
-    auth: str
-    project_name: str
-    project_url: str
+from auto_documentation.custom_types import TicketTree
 
 
 JIRA_INSTANCE = TicketTree(

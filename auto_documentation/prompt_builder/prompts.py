@@ -1,14 +1,4 @@
-from typing import TypedDict
-
-
-class TestBuilderPrompt(TypedDict):
-    tree_structure: str
-    parent_ticket_type: str
-    child_ticket_type: str
-    ticket_descriptions: str
-    python_version: str
-    test_name: str
-
+from auto_documentation.custom_types import TestBuilderPrompt
 
 TEST_BUILDER_PROMPT = """
 You are a test builder. You are given a ticket tree and a ticket id. You need to build a test for the ticket.

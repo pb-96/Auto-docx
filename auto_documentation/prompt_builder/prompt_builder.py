@@ -3,45 +3,13 @@ from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
 from auto_documentation.utils import find_testable_ticket, is_leaf
+from auto_documentation.custom_types import TicketKey, TicketDescriptions, PromptDict, SEPARATOR
+from auto_documentation.custom_exceptions import PromptBuilderError, InvalidTicketStructureError
 from typing import cast, Dict, List, Tuple, Any, Generator, TypeVar, Optional
 from dataclasses import dataclass
 import logging
 
-# Set up logging
 logger = logging.getLogger(__name__)
-
-# Constants
-SEPARATOR = f'{"*" * 100}\n'
-
-# Type definitions
-TicketKey = str
-TicketType = str
-TicketDescription = Dict[str, str]
-TicketDescriptions = Dict[TicketKey, TicketDescription]
-PromptDict = Dict[str, Any]
-
-
-@dataclass
-class TicketMetadata:
-    """Represents metadata for a ticket."""
-
-    title: str
-    description: str
-    ticket_type: str
-    parent_key: Optional[str] = None
-
-
-class PromptBuilderError(Exception):
-    """Base exception for PromptBuilder errors."""
-
-    pass
-
-
-class InvalidTicketStructureError(PromptBuilderError):
-    """Raised when the ticket structure is invalid."""
-
-    pass
-
 
 class PromptBuilder:
     """
