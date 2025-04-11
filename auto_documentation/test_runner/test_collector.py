@@ -1,6 +1,7 @@
 import pytest
 import time
 
+
 class ResultsCollector:
     def __init__(self):
         self.reports = []
@@ -16,7 +17,7 @@ class ResultsCollector:
     def pytest_runtest_make_report(self, item, call):
         outcome = yield
         report = outcome.get_result()
-        if report.when == 'call':
+        if report.when == "call":
             self.reports.append(report)
 
     def pytest_collection_modify_items(self, items):
@@ -26,9 +27,9 @@ class ResultsCollector:
         # To do need to add a way to get the file name
         print(exit_status, dir(exit_status))
         self.exitcode = exit_status.value
-        self.passed = len(terminal_reporter.stats.get('passed', []))
-        self.failed = len(terminal_reporter.stats.get('failed', []))
-        self.xfailed = len(terminal_reporter.stats.get('xfailed', []))
-        self.skipped = len(terminal_reporter.stats.get('skipped', []))
+        self.passed = len(terminal_reporter.stats.get("passed", []))
+        self.failed = len(terminal_reporter.stats.get("failed", []))
+        self.xfailed = len(terminal_reporter.stats.get("xfailed", []))
+        self.skipped = len(terminal_reporter.stats.get("skipped", []))
 
         self.total_duration = time.time() - terminal_reporter._sessionstarttime
