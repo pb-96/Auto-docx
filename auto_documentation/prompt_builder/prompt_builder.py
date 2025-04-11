@@ -224,11 +224,7 @@ class PromptBuilder:
         """
         try:
             testable_target = [*find_testable_ticket(self.ticket_tree)]
-            if not testable_target:
-                logger.warning("No testable tickets found")
-                return
-
-            if not all((is_leaf(ticket) for ticket in testable_target)):
+            if not all((is_leaf(ticket) for ticket in testable_target)) or not testable_target:
                 raise InvalidTicketStructureError("Testable target is not a leaf")
 
             ticket_tree_structure = self.ticket_tree.display_relationship()
@@ -239,10 +235,6 @@ class PromptBuilder:
                     f"Parent ticket type {parent_ticket_type} not found"
                 )
             parent_keys = self.ticket_ingester.types_to_keys[parent_ticket_type]
-            if not parent_keys:
-                raise InvalidTicketStructureError(
-                    f"No parent keys found for type {parent_ticket_type}"
-                )
             assert (
                 len(parent_keys) == 1
             ), f"Expected exactly one parent key, got {len(parent_keys)}"
@@ -250,15 +242,12 @@ class PromptBuilder:
 
             for ticket in testable_target:
                 ticket_type = ticket.ticket_type
-                if ticket_type not in self.ticket_ingester.types_to_keys:
-                    logger.warning(
-                        f"Ticket type {ticket_type} not found in types_to_keys"
-                    )
-                    continue
-                for child_key in self.ticket_ingester.types_to_keys[ticket_type]:
+                for child_key in self.ticket_ingester.types_to_keys.get(ticket_type, []):
                     yield from self.process_ticket(
                         child_key, parent_key, ticket_tree_structure, ticket_type
                     )
+                else:
+                    logger.warning(f"No child keys found for ticket type {ticket_type}")
 
         except Exception as e:
             logger.error(f"Error building prompt: {e}")
