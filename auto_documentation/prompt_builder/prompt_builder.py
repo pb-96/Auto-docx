@@ -139,7 +139,7 @@ class PromptBuilder:
                 ]
             )
 
-        return "\n".join(filter(None, prompt_parts))  # Filter out empty strings
+        return "\n".join(prompt_parts)
 
     def build_prompt_dict(
         self,
