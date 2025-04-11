@@ -1,6 +1,8 @@
-from auto_documentation.custom_types import TicketTree
+from auto_documentation.custom_types import TicketTree, FileType
 from typing import Generator, Dict, Any
 import jsonlines
+import yaml
+from pathlib import Path
 
 
 def ticket_tree_is_testable(ticket_tree: TicketTree) -> bool:
@@ -36,6 +38,24 @@ def check_leaf_is_testable(ticket_tree: TicketTree) -> bool:
 def write_to_jsonl(data: Dict[str, Any], file_path: str):
     with jsonlines.open(file_path, mode="w") as writer:
         writer.write(data)
+
+
+def get_ticket_tree_structure(ticket_tree_src: FileType) -> TicketTree:
+    if ticket_tree_src is None:
+        raise ValueError("Please add valid path to ticket tree config")
+    # Check if string is a valid path
+    if isinstance(ticket_tree_src, str):
+        ticket_tree_src = Path(ticket_tree_src)
+
+    try:
+        with open(ticket_tree_src, mode="r") as src:
+            yaml_data = yaml.safe_load(src)
+    except yaml.YAMLError as exc:
+        raise yaml.YAMLError("Could not open src file")
+
+    # Parse yaml file to ticket tree
+    as_ticket_tree = yaml_file_to_ticket_tree(yaml_dict=yaml_data)
+    return as_ticket_tree
 
 
 def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree: ...
