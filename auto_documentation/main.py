@@ -26,7 +26,9 @@ def get_ticket_tree_structure(ticket_tree_src: FileType) -> TicketTree:
     as_ticket_tree = yaml_file_to_ticket_tree(yaml_dict=yaml_data)
     return as_ticket_tree
 
+
 def run(run_type: RunType, ticket_src: TicketSource, ticket_tree_src: FileType): ...
+
 
 def init_args():
     parser = argparse.ArgumentParser()
@@ -41,8 +43,9 @@ def init_args():
     return {
         "run_type": run_type,
         "ticket_src": ticket_src,
-        "ticket_tree_src" : args.ticket_tree_src
+        "ticket_tree_src": args.ticket_tree_src,
     }
+
 
 if __name__ == "__main__":
     args = init_args()

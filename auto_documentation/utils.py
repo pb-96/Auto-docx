@@ -38,5 +38,4 @@ def write_to_jsonl(data: Dict[str, Any], file_path: str):
         writer.write(data)
 
 
-def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree:
-    ...
+def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree: ...
