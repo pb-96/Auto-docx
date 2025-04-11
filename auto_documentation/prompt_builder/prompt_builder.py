@@ -224,7 +224,10 @@ class PromptBuilder:
         """
         try:
             testable_target = [*find_testable_ticket(self.ticket_tree)]
-            if not all((is_leaf(ticket) for ticket in testable_target)) or not testable_target:
+            if (
+                not all((is_leaf(ticket) for ticket in testable_target))
+                or not testable_target
+            ):
                 raise InvalidTicketStructureError("Testable target is not a leaf")
 
             ticket_tree_structure = self.ticket_tree.display_relationship()
@@ -242,7 +245,9 @@ class PromptBuilder:
 
             for ticket in testable_target:
                 ticket_type = ticket.ticket_type
-                for child_key in self.ticket_ingester.types_to_keys.get(ticket_type, []):
+                for child_key in self.ticket_ingester.types_to_keys.get(
+                    ticket_type, []
+                ):
                     yield from self.process_ticket(
                         child_key, parent_key, ticket_tree_structure, ticket_type
                     )
