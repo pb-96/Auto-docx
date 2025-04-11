@@ -1,8 +1,6 @@
 from typing import Dict, Any, List, Union, Set, cast
-from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
-from auto_documentation import TicketTree
+from auto_documentation.custom_types import TicketTree, JiraConfig, TicketDict
 from collections import deque, defaultdict
-from auto_documentation.ticket_ingestion.configs.jira_config import TicketDict
 
 ERROR_MESSAGE = "Subclasses must implement this method"
 
