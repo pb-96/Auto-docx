@@ -1,6 +1,5 @@
 from auto_documentation.prompt_builder.prompts import build_test_builder_prompt
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
-from auto_documentation.custom_types import TicketTree
 from auto_documentation.utils import find_testable_ticket, is_leaf
 from auto_documentation.custom_types import (
     TicketKey,
@@ -12,7 +11,7 @@ from auto_documentation.custom_exceptions import (
     PromptBuilderError,
     InvalidTicketStructureError,
 )
-from typing import cast, Dict, List, Tuple, Any, Generator, TypeVar, Optional
+from typing import cast, Dict, List, Tuple, Any, Generator, Union
 from dataclasses import dataclass
 import logging
 from dynaconf import Dynaconf
@@ -22,30 +21,21 @@ logger = logging.getLogger(__name__)
 
 class PromptBuilder:
     """
-    Builds prompts for test generation based on ticket information.
-
     This class takes ticket information from various sources and constructs
     prompts that can be used to generate tests.
     """
 
     def __init__(
         self,
-        parent_ticket_id: str,
         ticket_ingester: GenericIngester,
-        generic_config: Dynaconf,
-        output_file_path: str,
-        return_default_prompt: bool = True,
+        output_file_path: Union[str, None],
+        # Maybe could use read from a config file here ?
+        return_default_prompt: bool = False,
     ):
         self.prompt: Dict[str, Any] = {}
         self.ticket_ingester = ticket_ingester
         self.output_file_path = output_file_path
         self.return_default_prompt = return_default_prompt
-
-        # Validate inputs
-        if not parent_ticket_id:
-            raise PromptBuilderError("Parent ticket ID cannot be empty")
-        if not output_file_path:
-            raise PromptBuilderError("Output file path cannot be empty")
 
     def get_ticket_description(
         self, child_key: TicketKey, parent_key: TicketKey
@@ -138,42 +128,38 @@ class PromptBuilder:
             ticket_descriptions, upward_order = self.get_ticket_description(
                 child_key, parent_key
             )
-            prompt_string = self.build_prompt_string(
+            ticket_description = self.build_prompt_string(
                 upward_order, child_key, ticket_descriptions
             )
+            # This allows the user to use the default prompt or the custom prompt from the output given
             if self.return_default_prompt:
                 prompt_meta = self.build_prompt_dict(
-                    ticket_descriptions=prompt_string,
+                    ticket_descriptions=ticket_description,
                     ticket_tree_structure=ticket_tree_structure,
                     parent_ticket_type=parent_key,
                     ticket_type=ticket_type,
                     child_key=child_key,
                 )
-                yield child_key, build_test_builder_prompt(prompt_meta)
+                yield {
+                    child_key: {
+                        "prompt_meta": prompt_meta,
+                        "prompt": build_test_builder_prompt(prompt_meta),
+                    }
+                }
             else:
                 # Return the ticket string and the ticket tree structure
-                yield child_key, (prompt_string, ticket_tree_structure)
+                yield {
+                    child_key: {
+                        "ticket_description": ticket_description,
+                        "ticket_tree_structure": ticket_tree_structure,
+                    }
+                }
 
         except Exception as e:
             logger.error(f"Error processing ticket {child_key}: {e}")
             # Continue processing other tickets even if one fails
 
     def build_prompt(self) -> Generator[Tuple[TicketKey, str], None, None]:
-        """
-        Build prompts for all testable tickets.
-
-        This method finds all testable tickets in the ticket tree, builds descriptions
-        for each ticket and its parents, and generates prompts for test generation.
-
-        Yields:
-            Tuples containing:
-            - The key of the testable ticket
-            - The generated prompt string
-
-        Raises:
-            InvalidTicketStructureError: If the ticket structure is invalid
-            PromptBuilderError: If there's an error building the prompt
-        """
         try:
             testable_target = [*find_testable_ticket(self.ticket_ingester.ticket_tree)]
             if (
@@ -182,7 +168,9 @@ class PromptBuilder:
             ):
                 raise InvalidTicketStructureError("Testable target is not a leaf")
 
-            ticket_tree_structure = self.ticket_ingester.ticket_tree.display_relationship()
+            ticket_tree_structure = (
+                self.ticket_ingester.ticket_tree.display_relationship()
+            )
             parent_ticket_type = self.ticket_ingester.ticket_tree.ticket_type
 
             if parent_ticket_type not in self.ticket_ingester.types_to_keys:

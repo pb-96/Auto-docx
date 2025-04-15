@@ -51,12 +51,11 @@ def run(
 
     match run_type:
         case RunType.TEST_CREATE:
-            PromptBuilder(
-                parent_ticket_id=parent_ticket_id,
+            prompts = PromptBuilder(
                 ticket_ingester=ticket_src_cls,
-                generic_config=settings,
                 output_file_path=output_file_path,
-            )
+            ).build_prompt()
+
         case RunType.GEN_DOCS:
             pass
 
