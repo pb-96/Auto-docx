@@ -29,8 +29,8 @@ class ActionType(str, Enum):
 
 
 class RunType(str, Enum):
-    TEST_CREATE = "CREATE"
-    GEN_DOCS = "GENERATE"
+    TEST_CREATE = "TEST_CREATE"
+    GEN_DOCS = "DOX_GENERATE"
 
 
 class TicketSource(str, Enum):
