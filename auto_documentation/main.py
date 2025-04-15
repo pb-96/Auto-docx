@@ -57,6 +57,10 @@ def run(
                 output_file_path=output_file_path,
             ).build_prompt()
             write_prompt_to_file(prompts, output_file_path)
+        case RunType.BUILD_TREE:
+            # Write the ticket tree to yaml
+            ticket_tree = ticket_src_cls.build_tree_from_ticket_id(parent_ticket_id)
+            # Would need to write the ticket tree to yaml
         case RunType.GEN_DOCS:
             pass
 

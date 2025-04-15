@@ -98,6 +98,10 @@ class GenericIngester:
             result += self.process_children(child_key, heading_level + 1)
         return result
 
+    def build_tree_from_ticket_id(self, ticket_id: str) -> None:
+        # This can read a ticket id and build a tree of tests
+        raise NotImplementedError(ERROR_MESSAGE)
+
     def build_formatted_tree(self) -> None:
         raise NotImplementedError(ERROR_MESSAGE)
 

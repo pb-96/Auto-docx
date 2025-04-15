@@ -8,7 +8,10 @@ from dynaconf import Dynaconf
 
 class IngestJira(GenericIngester):
     def __init__(
-        self, jira_config: Dynaconf, ticket_tree: TicketTree, parent_ticket_id: str
+        self,
+        jira_config: Dynaconf,
+        ticket_tree: Union[TicketTree, None],
+        parent_ticket_id: str,
     ):
         self.jira = JIRA(
             server=jira_config.get("jira_project_url"),
@@ -73,6 +76,8 @@ class IngestJira(GenericIngester):
             next_issue = self.get_issue_data(key_to_query)
             string_issue_type = str(next_issue.issuetype)
             self.types_to_keys[string_issue_type].append(key_to_query)
+            # This is where we need to handle the case where the ticket tree is None
+            # This would mean we have to build the ticket tree from the ticket id
             current_node = self.find_node_in_ticket_tree(string_issue_type)
             self.formatted_tree[key_to_query] = self.build_entry(
                 next_issue, current_node, last_key
