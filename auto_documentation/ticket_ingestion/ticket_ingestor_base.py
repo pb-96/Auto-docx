@@ -1,6 +1,7 @@
 from typing import Dict, Any, List, Union, Set, cast
-from auto_documentation.custom_types import TicketTree, JiraConfig, TicketDict
+from auto_documentation.custom_types import TicketTree, TicketDict
 from collections import deque, defaultdict
+from dynaconf import Dynaconf
 
 ERROR_MESSAGE = "Subclasses must implement this method"
 
@@ -8,7 +9,7 @@ ERROR_MESSAGE = "Subclasses must implement this method"
 class GenericIngester:
 
     def __init__(
-        self, jira_config: JiraConfig, ticket_tree: TicketTree, parent_ticket_id: str
+        self, jira_config: Dynaconf, ticket_tree: TicketTree, parent_ticket_id: str
     ):
         self.jira_config = jira_config
         self.ticket_tree = ticket_tree

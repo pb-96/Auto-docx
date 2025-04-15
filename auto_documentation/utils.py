@@ -58,4 +58,25 @@ def get_ticket_tree_structure(ticket_tree_src: FileType) -> TicketTree:
     return as_ticket_tree
 
 
-def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree: ...
+def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree:
+    root: Dict[str, Any] = yaml_dict["root"]
+    children = root.pop("child")
+    as_ticket_tree = TicketTree(**root)
+    parent = as_ticket_tree
+
+    while children:
+        if "child" in children:
+            next_children = children.pop("child")
+            # TODO: Here is where we need to handle the case where the children is a list
+            # For now we assume only one child is allowed
+            # Here is where we need to handle the case where the children is a list
+            assert isinstance(next_children, dict)
+        else:
+            next_children = None
+        children["parent"] = parent
+        as_ticket = TicketTree(**children)
+        parent.child.append(as_ticket)
+        parent = as_ticket
+        children = next_children
+
+    return as_ticket_tree

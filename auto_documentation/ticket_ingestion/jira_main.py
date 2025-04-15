@@ -1,20 +1,20 @@
 from typing import Dict, Any, List, Union, Set, cast
 from jira import JIRA
-from auto_documentation.ticket_ingestion.configs.jira_config import JIRA_INSTANCE
 from auto_documentation.custom_types import TicketTree, JiraConfig, TicketDict
 from collections import deque
 from functools import lru_cache
 from collections import defaultdict
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
+from dynaconf import Dynaconf
 
 
 class IngestJira(GenericIngester):
     def __init__(
-        self, jira_config: JiraConfig, ticket_tree: TicketTree, parent_ticket_id: str
+        self, jira_config: Dynaconf, ticket_tree: TicketTree, parent_ticket_id: str
     ):
         self.jira = JIRA(
-            server=jira_config.project_url,
-            basic_auth=(jira_config.email, jira_config.auth),
+            server=jira_config.jira_project_url,
+            basic_auth=(jira_config.jira_email, jira_config.jira_auth),
         )
         self.project = self.jira.project(jira_config.project_name)
 

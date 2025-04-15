@@ -1,7 +1,6 @@
 from auto_documentation.prompt_builder.prompts import build_test_builder_prompt
-from auto_documentation.ticket_ingestion.configs.ticket_tree import TicketTree
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
-from auto_documentation.ticket_ingestion.configs.jira_config import JiraConfig
+from auto_documentation.custom_types import TicketTree
 from auto_documentation.utils import find_testable_ticket, is_leaf
 from auto_documentation.custom_types import (
     TicketKey,
@@ -16,6 +15,7 @@ from auto_documentation.custom_exceptions import (
 from typing import cast, Dict, List, Tuple, Any, Generator, TypeVar, Optional
 from dataclasses import dataclass
 import logging
+from dynaconf import Dynaconf
 
 logger = logging.getLogger(__name__)
 
@@ -31,22 +31,13 @@ class PromptBuilder:
     def __init__(
         self,
         parent_ticket_id: str,
-        ticket_tree: TicketTree,
         ticket_ingester: GenericIngester,
-        generic_config: JiraConfig,
+        generic_config: Dynaconf,
         output_file_path: str,
         return_default_prompt: bool = True,
     ):
         self.prompt: Dict[str, Any] = {}
-        self.parent_ticket_id = parent_ticket_id
-        self.ticket_tree = ticket_tree
-        self.generic_config = generic_config
-        self.ticket_ingester = cast(
-            GenericIngester,
-            ticket_ingester(
-                self.generic_config, self.ticket_tree, self.parent_ticket_id
-            ),
-        )
+        self.ticket_ingester = ticket_ingester
         self.output_file_path = output_file_path
         self.return_default_prompt = return_default_prompt
 

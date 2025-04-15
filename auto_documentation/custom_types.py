@@ -47,14 +47,6 @@ class TicketDict(TypedDict):
     children: List[str]
 
 
-class JiraConfig(BaseModel):
-    # Would need to store the passwords correctly
-    email: str
-    auth: str
-    project_name: str
-    project_url: str
-
-
 class TestBuilderPrompt(TypedDict):
     tree_structure: str
     parent_ticket_type: str

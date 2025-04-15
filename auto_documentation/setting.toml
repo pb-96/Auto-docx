@@ -1,0 +1,16 @@
+[default]
+# Default settings for all environments
+app_name = "Auto BDD testing & auto documentation"
+debug = false
+
+[development]
+# Development-specific settings
+debug = true
+
+[production]
+# Production-specific settings
+debug = false
+
+[test]
+# Test-specific settings
+debug = true 

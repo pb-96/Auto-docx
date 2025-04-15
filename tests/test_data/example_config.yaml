@@ -1,0 +1,19 @@
+root:
+  parent: null
+  ticket_type: Epic
+  action: Description
+  child:
+    {
+
+        ticket_type: Requirement,
+        action: Description,
+        child: {
+          ticket_type: FunctionalReq,
+          action: Description,
+          child: {
+            ticket_type: NonFunctionalReq,
+            action: Test
+            }
+        }
+      }
+    
