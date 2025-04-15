@@ -175,15 +175,15 @@ class PromptBuilder:
             PromptBuilderError: If there's an error building the prompt
         """
         try:
-            testable_target = [*find_testable_ticket(self.ticket_tree)]
+            testable_target = [*find_testable_ticket(self.ticket_ingester.ticket_tree)]
             if (
                 not all((is_leaf(ticket) for ticket in testable_target))
                 or not testable_target
             ):
                 raise InvalidTicketStructureError("Testable target is not a leaf")
 
-            ticket_tree_structure = self.ticket_tree.display_relationship()
-            parent_ticket_type = self.ticket_tree.ticket_type
+            ticket_tree_structure = self.ticket_ingester.ticket_tree.display_relationship()
+            parent_ticket_type = self.ticket_ingester.ticket_tree.ticket_type
 
             if parent_ticket_type not in self.ticket_ingester.types_to_keys:
                 raise InvalidTicketStructureError(
