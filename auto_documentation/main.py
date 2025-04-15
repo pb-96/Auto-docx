@@ -27,7 +27,7 @@ def run(
     ticket_src: TicketSource,
     ticket_tree_src: FileType,
     parent_ticket_id: str,
-    output_file_path: str,
+    output_file_path: Union[str, None],
 ):
     try:
         loaded_ticket_tree = get_ticket_tree_structure(ticket_tree_src=ticket_tree_src)
@@ -55,7 +55,7 @@ def run(
                 parent_ticket_id=parent_ticket_id,
                 ticket_ingester=ticket_src_cls,
                 generic_config=settings,
-                output_file_path="./",
+                output_file_path=output_file_path,
             )
         case RunType.GEN_DOCS:
             pass
