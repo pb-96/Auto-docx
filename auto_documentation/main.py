@@ -1,9 +1,8 @@
 import argparse
 import logging
-from typing import Union, Dict, Any
-from pathlib import Path
+from typing import Union
 from auto_documentation.custom_exceptions import InvalidTicketStructureError
-from auto_documentation.custom_types import RunType, FileType, TicketSource, TicketTree
+from auto_documentation.custom_types import RunType, FileType, TicketSource
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.ticket_ingestion.jira_main import IngestJira
 from auto_documentation.utils import get_ticket_tree_structure

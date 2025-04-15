@@ -1,27 +1,21 @@
 from auto_documentation.prompt_builder.prompts import build_test_builder_prompt
-from auto_documentation.ticket_ingestion.jira_main import IngestJira
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.utils import (
     find_testable_ticket,
-    get_ticket_tree_structure,
     is_leaf,
 )
 from auto_documentation.custom_types import (
-    RunType,
     TicketKey,
     TicketDescriptions,
     PromptDict,
     SEPARATOR,
-    TicketSource,
 )
 from auto_documentation.custom_exceptions import (
     PromptBuilderError,
     InvalidTicketStructureError,
 )
-from typing import cast, Dict, List, Tuple, Any, Generator, Union
-from dataclasses import dataclass
+from typing import Dict, List, Tuple, Any, Generator, Union
 import logging
-from dynaconf import Dynaconf
 
 logger = logging.getLogger(__name__)
 

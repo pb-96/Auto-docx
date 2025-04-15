@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Union, Set, cast
+from typing import Dict, Any, List, Union, Set
 from auto_documentation.custom_types import TicketTree, TicketDict
 from collections import deque, defaultdict
 from dynaconf import Dynaconf
