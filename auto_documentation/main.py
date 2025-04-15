@@ -1,11 +1,11 @@
 import argparse
 import logging
-from typing import Union
+from typing import Union, Dict, Any, List
 from auto_documentation.custom_exceptions import InvalidTicketStructureError
 from auto_documentation.custom_types import RunType, FileType, TicketSource
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.ticket_ingestion.jira_main import IngestJira
-from auto_documentation.utils import get_ticket_tree_structure
+from auto_documentation.utils import get_ticket_tree_structure, write_prompt_to_file
 from dynaconf import Dynaconf
 from auto_documentation.prompt_builder.prompt_builder import PromptBuilder
 
@@ -22,6 +22,7 @@ settings = Dynaconf(
     environments=True,
     load_dotenv=True,
 )
+
 
 def run(
     run_type: RunType,
@@ -53,14 +54,11 @@ def run(
 
     match run_type:
         case RunType.TEST_CREATE:
-            print("Running prompt Babby")
             prompts = PromptBuilder(
                 ticket_ingester=ticket_src_cls,
                 output_file_path=output_file_path,
             ).build_prompt()
-            for prompt in prompts:
-                print(prompt)
-
+            write_prompt_to_file(prompts, output_file_path)
         case RunType.GEN_DOCS:
             pass
 
@@ -91,4 +89,3 @@ def init_args():
 if __name__ == "__main__":
     args = init_args()
     run(**args)
-    

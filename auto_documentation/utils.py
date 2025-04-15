@@ -1,8 +1,9 @@
 from auto_documentation.custom_types import TicketTree, FileType
-from typing import Generator, Dict, Any
-import jsonlines
+from typing import Generator, Dict, Any, Union, List
 import yaml
 from pathlib import Path
+import jsonlines
+import json
 
 
 def ticket_tree_is_testable(ticket_tree: TicketTree) -> bool:
@@ -33,11 +34,6 @@ def check_leaf_is_testable(ticket_tree: TicketTree) -> bool:
         if check_leaf_is_testable(child):
             return True
     return False
-
-
-def write_to_jsonl(data: Dict[str, Any], file_path: str):
-    with jsonlines.open(file_path, mode="w") as writer:
-        writer.write(data)
 
 
 def get_ticket_tree_structure(ticket_tree_src: FileType) -> TicketTree:
@@ -80,3 +76,15 @@ def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree:
         children = next_children
 
     return as_ticket_tree
+
+
+def write_prompt_to_file(data: List[Dict[str, Any]], file_path: Union[str, Path]):
+    if isinstance(file_path, str):
+        file_path = Path(file_path)
+
+    # Create the directory if it doesn't exist
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Write the data to a JSONL file using the jsonlines library
+    with jsonlines.open(file_path, mode="w") as writer:
+        writer.write_all(data)
