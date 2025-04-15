@@ -3,7 +3,6 @@ from typing import Generator, Dict, Any, Union, List
 import yaml
 from pathlib import Path
 import jsonlines
-import json
 
 
 def ticket_tree_is_testable(ticket_tree: TicketTree) -> bool:
