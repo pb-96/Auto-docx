@@ -1,6 +1,6 @@
 from typing import Dict, Any, List, Union, Set, cast
 from jira import JIRA
-from auto_documentation.custom_types import TicketTree, JiraConfig, TicketDict
+from auto_documentation.custom_types import TicketTree, TicketDict
 from collections import deque
 from functools import lru_cache
 from collections import defaultdict

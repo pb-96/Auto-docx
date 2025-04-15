@@ -8,7 +8,7 @@ from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericInge
 from auto_documentation.ticket_ingestion.jira_main import IngestJira
 from auto_documentation.utils import get_ticket_tree_structure
 from dynaconf import Dynaconf
-from auto_documentation.prompt_builder import PromptBuilder
+from auto_documentation.prompt_builder.prompt_builder import PromptBuilder
 
 logger = logging.getLogger(__name__)
 
