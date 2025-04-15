@@ -1,9 +1,8 @@
 from auto_documentation.custom_types import TicketTree, FileType
-from typing import Generator, Dict, Any, Union, List
+from typing import Generator, Dict, Any, Union
 import yaml
 from pathlib import Path
 import jsonlines
-
 
 def ticket_tree_is_testable(ticket_tree: TicketTree) -> bool:
     return ticket_tree.action is not None and ticket_tree.action == "Test"
