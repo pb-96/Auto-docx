@@ -31,7 +31,8 @@ class ActionType(str, Enum):
 class RunType(str, Enum):
     TEST_CREATE = "TEST_CREATE"
     GEN_DOCS = "DOX_GENERATE"
-
+    # This can read a ticket id and build a tree of tests
+    BUILD_TREE = "BUILD_TREE"
 
 class TicketSource(str, Enum):
     # List all supported ticket ingestion sources
