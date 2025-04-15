@@ -16,11 +16,13 @@ logger = logging.getLogger(__name__)
 # Initialize Dynaconf
 settings = Dynaconf(
     envvar_prefix="MD_PARSER",
-    settings_files=["settings.yaml", ".secrets.yaml"],
+    settings_files=[
+        "settings.yaml",
+        "auto_documentation/secrets.toml",
+    ],
     environments=True,
     load_dotenv=True,
 )
-
 
 def run(
     run_type: RunType,
@@ -29,6 +31,7 @@ def run(
     parent_ticket_id: str,
     output_file_path: Union[str, None],
 ):
+
     try:
         loaded_ticket_tree = get_ticket_tree_structure(ticket_tree_src=ticket_tree_src)
     except InvalidTicketStructureError as e:
@@ -51,10 +54,13 @@ def run(
 
     match run_type:
         case RunType.TEST_CREATE:
+            print("Running prompt Babby")
             prompts = PromptBuilder(
                 ticket_ingester=ticket_src_cls,
                 output_file_path=output_file_path,
             ).build_prompt()
+            for prompt in prompts:
+                print(prompt)
 
         case RunType.GEN_DOCS:
             pass
@@ -86,3 +92,4 @@ def init_args():
 if __name__ == "__main__":
     args = init_args()
     run(**args)
+    

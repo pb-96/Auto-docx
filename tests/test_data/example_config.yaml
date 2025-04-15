@@ -8,10 +8,10 @@ root:
         ticket_type: Requirement,
         action: Description,
         child: {
-          ticket_type: FunctionalReq,
+          ticket_type: NonFunctionalReq,
           action: Description,
           child: {
-            ticket_type: NonFunctionalReq,
+            ticket_type: FunctionalReq,
             action: Test
             }
         }

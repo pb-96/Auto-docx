@@ -13,11 +13,10 @@ class IngestJira(GenericIngester):
         self, jira_config: Dynaconf, ticket_tree: TicketTree, parent_ticket_id: str
     ):
         self.jira = JIRA(
-            server=jira_config.jira_project_url,
-            basic_auth=(jira_config.jira_email, jira_config.jira_auth),
+            server=jira_config.get("jira_project_url"),
+            basic_auth=(jira_config.get("jira_email"), jira_config.get("jira_auth")),
         )
-        self.project = self.jira.project(jira_config.project_name)
-
+        self.project = self.jira.project(jira_config.get("jira_project_name"))
         super().__init__(jira_config, ticket_tree, parent_ticket_id)
 
     def get_issue_data(self, issue_key: str):
