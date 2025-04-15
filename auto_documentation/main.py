@@ -40,7 +40,6 @@ def run(
             e,
         )
 
-    ticket_src_cls: Union[GenericIngester, None] = None
     match ticket_src:
         case TicketSource.JIRA:
             # Also just initialize the class here
