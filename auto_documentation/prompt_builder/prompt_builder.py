@@ -1,11 +1,18 @@
 from auto_documentation.prompt_builder.prompts import build_test_builder_prompt
+from auto_documentation.ticket_ingestion.jira_main import IngestJira
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
-from auto_documentation.utils import find_testable_ticket, is_leaf
+from auto_documentation.utils import (
+    find_testable_ticket,
+    get_ticket_tree_structure,
+    is_leaf,
+)
 from auto_documentation.custom_types import (
+    RunType,
     TicketKey,
     TicketDescriptions,
     PromptDict,
     SEPARATOR,
+    TicketSource,
 )
 from auto_documentation.custom_exceptions import (
     PromptBuilderError,
@@ -36,6 +43,7 @@ class PromptBuilder:
         self.ticket_ingester = ticket_ingester
         self.output_file_path = output_file_path
         self.return_default_prompt = return_default_prompt
+        self.prompts = self.build_prompt()
 
     def get_ticket_description(
         self, child_key: TicketKey, parent_key: TicketKey
@@ -140,15 +148,16 @@ class PromptBuilder:
                     ticket_type=ticket_type,
                     child_key=child_key,
                 )
-                yield {
+                prompt = build_test_builder_prompt(prompt_meta)
+                return {
                     child_key: {
                         "prompt_meta": prompt_meta,
-                        "prompt": build_test_builder_prompt(prompt_meta),
+                        "prompt": prompt,
                     }
                 }
             else:
                 # Return the ticket string and the ticket tree structure
-                yield {
+                return {
                     child_key: {
                         "ticket_description": ticket_description,
                         "ticket_tree_structure": ticket_tree_structure,
@@ -181,19 +190,25 @@ class PromptBuilder:
             assert (
                 len(parent_keys) == 1
             ), f"Expected exactly one parent key, got {len(parent_keys)}"
-            parent_key = next(iter(parent_keys))
 
+            parent_key = next(iter(parent_keys))
             for ticket in testable_target:
                 ticket_type = ticket.ticket_type
                 for child_key in self.ticket_ingester.types_to_keys.get(
                     ticket_type, []
                 ):
-                    yield from self.process_ticket(
+                    prompt = self.process_ticket(
                         child_key, parent_key, ticket_tree_structure, ticket_type
                     )
-                else:
-                    logger.warning(f"No child keys found for ticket type {ticket_type}")
+                    yield prompt
 
         except Exception as e:
             logger.error(f"Error building prompt: {e}")
             raise PromptBuilderError(f"Failed to build prompt: {e}")
+
+    def __iter__(self):
+        for prompt in self.prompts:
+            yield prompt
+
+    def __next__(self):
+        return next(self.prompts)
