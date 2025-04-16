@@ -1,168 +1,167 @@
-# BDD Test Generator
+# Auto Documentation & Test Generator
 
 ## Overview
-A test automation framework that leverages LLM (Large Language Models) to generate Behavior-Driven Development (BDD) tests from Jira and Notion tickets. The system features advanced document processing capabilities, converting both Markdown and HTML inputs into structured node types for consistent test generation and documentation.
+A sophisticated automation framework that generates documentation and tests from ticket management systems (currently Jira, with Notion support planned). The system features advanced ticket tree processing capabilities, converting ticket hierarchies into structured documentation and test prompts.
 
-## Features (Planned)
-- Automated BDD test generation from:
-  - Jira tickets
-  - Notion documents
+## Features
+
+### Implemented ✅
+- Automated ticket tree generation from:
+  - Jira tickets (fully implemented)
+  - Support for complex ticket hierarchies
+  - Intelligent parent-child relationship detection
 - Document Processing
-  - Markdown to HTML conversion
-  - HTML parsing and validation
-  - Custom node type generation for:
-    - Requirements
-    - Test scenarios
-    - Expected outcomes
-    - Non-functional criteria
-- LLM-powered test generation
-  - Automatic conversion of requirements to test code
-  - Intelligent test case creation based on ticket context
-  - Test naming convention matching ticket IDs
-- Integration of functional and non-functional requirements
-- Celery-based test execution
-- Automated documentation generation from:
-  - Source tickets
-  - Test execution results
+  - Ticket tree to structured documentation
+  - Custom node type generation
+  - YAML configuration support
+- LLM-powered prompt generation
+  - Automatic conversion of tickets to test prompts
+  - Intelligent prompt creation based on ticket context
+  - Support for different action types (DESCRIPTION, TEST)
+- Configuration Management
+  - Dynaconf integration
+  - Environment-based configuration
+  - Secure secrets management
+
+### In Progress 🚧
+- Notion Integration
+  - Ticket ingestion from Notion
+  - Notion-specific tree building
+- Documentation Generation
+  - Automated doc creation from ticket trees
+  - Documentation pipeline
+- Test Runner
+  - Test execution framework
+  - Result collection and reporting
 
 ## How It Works
-1. **Document Processing Pipeline**
+1. **Ticket Processing Pipeline**
    ```mermaid
-   graph LR
-       A[Input Document] --> B{Format Type}
-       B -->|Markdown| C[MD to HTML Converter]
-       B -->|HTML| D[HTML Parser]
-       C --> D
-       D --> E[Node Type Generator]
-       E --> F[Document Creator]
+   graph TD;
+       A[Ticket Source]-->B{Ticket Type};
+       B-->|Jira|C[Jira Ingester];
+       B-->|Notion|D[Notion Ingester];
+       C-->E[Tree Builder];
+       D-->E;
+       E-->F[Prompt Generator];
+       F-->G[Documentation/Test Output];
    ```
 
-2. **Node Type System**
-   - Custom node types for structured representation:
-     ```typescript
-     interface DocumentNode {
-       type: NodeType;
-       content: string;
-       children: DocumentNode[];
-       metadata: NodeMetadata;
-     }
-
-     enum NodeType {
-       REQUIREMENT,
-       TEST_SCENARIO,
-       EXPECTED_OUTCOME,
-       NFR_CRITERIA,
-       // ...
-     }
+2. **Ticket Tree System**
+   - Custom tree structure for ticket representation:
+     ```python
+     class TicketTree:
+         ticket_type: str
+         parent: Optional[TicketTree]
+         child: List[TicketTree]
+         action: ActionType  # DESCRIPTION or TEST
      ```
 
 3. **Input Sources**
-   - Jira epics and associated tickets
-   - Notion documents
-   - Requirements mapping (functional & non-functional)
+   - Jira epics and associated tickets (implemented)
+   - Notion documents (planned)
    - Supported formats:
-     - Markdown
-     - HTML
-     - Plain text
+     - YAML configuration
+     - Direct ticket ID input
 
-4. **Document Processing**
-   - Markdown Processing:
-     - Parses markdown syntax
-     - Converts to standardized HTML
-     - Preserves document structure
-   - HTML Processing:
-     - Validates HTML structure
-     - Extracts relevant content
-     - Maps to custom node types
-   - Node Generation:
+4. **Tree Processing**
+   - Ticket Processing:
+     - Builds hierarchical tree structure
+     - Maintains parent-child relationships
+     - Detects and prevents cycles
+   - Tree Generation:
      - Creates structured representation
      - Maintains relationship hierarchy
-     - Attaches metadata
-
-5. **LLM Test Generation**
-   - Uses processed node types as input
-   - Generates Celery test files with:
-     - Test names matching ticket IDs
-     - BDD-style test structure
-     - Appropriate assertions and validations
+     - Sets appropriate action types
 
 ## Technical Architecture
-- **Document Processing Layer**
-  - Markdown parser
-  - HTML validator
-  - Node type generator
-  - Document creator
+- **Ticket Processing Layer**
+  - Jira API integration
+  - Tree builder
+  - Cycle detection
+  - Action type assignment
 
-- **Input Processing**
-  - Jira/Notion API integration
-  - Requirement parser
-  - LLM context preparation
+- **Configuration Management**
+  - Dynaconf integration
+  - Environment variables
+  - Secrets management
 
-- **Test Generation Engine**
+- **Prompt Generation**
   - LLM integration layer
-  - Test template system
-  - Celery task generator
-  - Naming convention manager
-
-- **Execution Framework**
-  - Celery worker configuration
-  - Test runner
-  - Result collector
-  - Reporting system
-
-## Example Node Type Usage
-```python
-# Example of processed document structure
-document = {
-    "type": "REQUIREMENT",
-    "content": "User Authentication",
-    "children": [
-        {
-            "type": "TEST_SCENARIO",
-            "content": "Valid Login Flow",
-            "children": [
-                {
-                    "type": "EXPECTED_OUTCOME",
-                    "content": "User successfully authenticated"
-                }
-            ]
-        },
-        {
-            "type": "NFR_CRITERIA",
-            "content": "Response time < 200ms"
-        }
-    ]
-}
-```
+  - Template system
+  - Action type handling
 
 ## Getting Started
-(To be added)
 
-## Prerequisites
-(To be added)
+### Prerequisites
+- Python 3.8+
+- Poetry for dependency management
+- Jira API access (for Jira integration)
 
-## Installation
-(To be added)
+### Installation
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   poetry install
+   ```
+3. Configure your environment:
+   ```bash
+   cp auto_documentation/secrets.toml.example auto_documentation/secrets.toml
+   # Edit secrets.toml with your credentials
+   ```
 
-## Usage
+### Usage
 Example workflow:
-1. Configure ticket source (Jira/Notion)
-2. System processes input documents:
-   - Converts Markdown to HTML if needed
-   - Parses HTML into node types
-   - Validates document structure
-3. System automatically:
-   - Generates Celery tests via LLM
-   - Names tests according to ticket IDs
-   - Creates test documentation
-4. Execute tests through Celery
-5. View results and generated documentation
+1. Configure ticket source (Jira credentials in secrets.toml)
+2. Run the system:
+   ```bash
+   poetry run python -m auto_documentation.main --run-type TEST_CREATE --ticket-source JIRA --ticket-tree-src your_config.yaml --parent-ticket-id YOUR-TICKET-ID
+   ```
+3. System will:
+   - Build ticket tree from parent ticket
+   - Generate appropriate prompts
+   - Create documentation/test structure
 
 ## Configuration
-(To be added)
+The system uses Dynaconf for configuration management. Key configuration files:
+
+### settings.yaml
+Create this file in the root directory:
+```yaml
+# Jira Configuration
+jira_project_url: "https://your-jira-instance.atlassian.net"
+jira_project_name: "YOUR_PROJECT"
+jira_email: "your-email@company.com"
+
+# Environment Configuration
+environment: "development"  # or "production"
+
+# Output Configuration
+output_directory: "output"
+```
+
+### secrets.toml
+Create this file in the auto_documentation directory:
+```toml
+# Jira API Token (required)
+jira_auth = "your-jira-api-token"
+
+# Optional: LLM API Keys (if using external LLM services)
+# openai_api_key = "your-openai-key"
+# anthropic_api_key = "your-anthropic-key"
+```
+
+To set up your configuration:
+1. Copy the example files:
+   ```bash
+   cp settings.yaml.example settings.yaml
+   cp auto_documentation/secrets.toml.example auto_documentation/secrets.toml
+   ```
+2. Edit both files with your specific configuration
+3. Ensure secrets.toml is in your .gitignore (it is by default)
 
 ## Contributing
-(To be added)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
-(To be added)
+[License details to be added]

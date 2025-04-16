@@ -26,18 +26,20 @@ settings = Dynaconf(
 def run(
     run_type: RunType,
     ticket_src: TicketSource,
-    ticket_tree_src: FileType,
+    ticket_tree_src: Union[FileType, None],
     parent_ticket_id: str,
     output_file_path: Union[str, None],
 ):
-
-    try:
-        loaded_ticket_tree = get_ticket_tree_structure(ticket_tree_src=ticket_tree_src)
-    except InvalidTicketStructureError as e:
-        raise InvalidTicketStructureError(
-            "Invalid ticket structure found in the ticket tree src file",
-            e,
-        )
+    if ticket_tree_src is not None:
+        try:
+            loaded_ticket_tree = get_ticket_tree_structure(ticket_tree_src=ticket_tree_src)
+        except InvalidTicketStructureError as e:
+            raise InvalidTicketStructureError(
+                "Invalid ticket structure found in the ticket tree src file",
+                e,
+            )
+    else:
+        loaded_ticket_tree = None
 
     match ticket_src:
         case TicketSource.JIRA:
@@ -59,9 +61,7 @@ def run(
             ).build_prompt()
             write_prompt_to_file(prompts, output_file_path)
         case RunType.BUILD_TREE:
-            # Write the ticket tree to yaml
-            ...
-            # Would need to write the ticket tree to yaml
+            ticket_src_cls.build_tree_from_ticket_id(output_file_path)
         case RunType.GEN_DOCS:
             pass
 

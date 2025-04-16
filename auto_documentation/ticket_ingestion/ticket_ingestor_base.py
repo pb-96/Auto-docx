@@ -2,6 +2,9 @@ from typing import Dict, Any, Union, Set
 from auto_documentation.custom_types import TicketTree, TicketDict
 from collections import deque, defaultdict
 from dynaconf import Dynaconf
+from pathlib import Path
+import yaml
+
 
 ERROR_MESSAGE = "Subclasses must implement this method"
 
@@ -17,8 +20,14 @@ class GenericIngester:
         self.formatted_tree: Dict[str, Any] = {}
         self._node_cache = {}
         self.types_to_keys = defaultdict(list)
-        if self.ticket_tree is None:
-            self.build_tree_from_ticket_id()
+    
+    def _create_ticket_tree_node(
+        self,
+        ticket_type: str,
+        parent: Union[TicketTree, None] = None,
+    ) -> TicketTree:
+        return TicketTree(parent=parent, ticket_type=ticket_type)
+            
 
     def find_node_in_ticket_tree(self, ticket_type: str) -> Union[TicketTree, None]:
         if ticket_type in self._node_cache:
@@ -99,8 +108,37 @@ class GenericIngester:
             result += self.process_children(child_key, heading_level + 1)
         return result
 
-    def write_tree_to_yaml(self):
-        raise NotImplementedError(ERROR_MESSAGE)
+    def write_tree_to_yaml(self, outfile: Union[Path, str]):
+        if self.ticket_tree is None:
+            raise ValueError("Initialize A ticket tree")
+
+        parent_as_dict = {
+            "ticket_type": self.ticket_tree.ticket_type,
+            "action": self.ticket_tree.action.value,
+            "child": [],
+        }
+        last_added = parent_as_dict
+
+        member: TicketTree
+        queue = deque([*self.ticket_tree.child])
+        while queue:
+            member = queue.popleft()
+            as_dict = {
+                "ticket_type": member.ticket_type,
+                "action": member.action.value,
+                "child": [],
+            }
+            last_added["child"].append(as_dict)
+            last_added = as_dict
+            queue.extend(member.child)
+
+        root = {"root": parent_as_dict}
+
+        with open(outfile, "w") as ff:
+            yaml.dump(
+                root,
+                ff,
+            )
 
     def build_tree_from_ticket_id(self, ticket_id: str) -> None:
         # This can read a ticket id and build a tree of tests

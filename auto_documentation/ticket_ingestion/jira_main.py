@@ -4,9 +4,6 @@ from auto_documentation.custom_types import ActionType, TicketTree, TicketDict
 from collections import deque
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from dynaconf import Dynaconf
-from pathlib import Path
-import yaml
-
 
 class IngestJira(GenericIngester):
     def __init__(
@@ -38,7 +35,6 @@ class IngestJira(GenericIngester):
             return None
 
     def _process_issue_links(self, issue) -> List[str]:
-        """Extract valid linked issue keys from an issue."""
         linked_keys = []
         for issue_link in issue.issuelinks:
             linked_issue = self._is_valid_issue_link(issue_link)
@@ -48,14 +44,6 @@ class IngestJira(GenericIngester):
             if key:
                 linked_keys.append(key)
         return linked_keys
-
-    def _create_ticket_tree_node(
-        self,
-        ticket_type: str,
-        parent: Union[TicketTree, None] = None,
-    ) -> TicketTree:
-        """Create a new TicketTree node with appropriate action type."""
-        return TicketTree(parent=parent, ticket_type=ticket_type)
 
     def append_next(self, current_node: TicketTree, queue: deque, next_issue) -> None:
         next_children = self.get_next_children_set(current_node)
@@ -146,34 +134,3 @@ class IngestJira(GenericIngester):
         self.ticket_tree = parent_node
         return parent_node
 
-    def write_tree_to_yaml(self, outfile: Union[Path, str]) -> None:
-        if self.ticket_tree is None:
-            raise ValueError("Initialize A ticket tree")
-
-        parent_as_dict = {
-            "ticket_type": self.ticket_tree.ticket_type,
-            "action": self.ticket_tree.action.value,
-            "child": [],
-        }
-        last_added = parent_as_dict
-
-        member: TicketTree
-        queue = deque([*self.ticket_tree.child])
-        while queue:
-            member = queue.popleft()
-            as_dict = {
-                "ticket_type": member.ticket_type,
-                "action": member.action.value,
-                "child": [],
-            }
-            last_added["child"].append(as_dict)
-            last_added = as_dict
-            queue.extend(member.child)
-
-        root = {"root": parent_as_dict}
-
-        with open(outfile, "w") as ff:
-            yaml.dump(
-                root,
-                ff,
-            )
