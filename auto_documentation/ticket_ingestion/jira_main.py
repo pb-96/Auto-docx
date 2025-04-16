@@ -5,6 +5,7 @@ from collections import deque
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from dynaconf import Dynaconf
 
+
 class IngestJira(GenericIngester):
     def __init__(
         self,
@@ -133,4 +134,3 @@ class IngestJira(GenericIngester):
 
         self.ticket_tree = parent_node
         return parent_node
-

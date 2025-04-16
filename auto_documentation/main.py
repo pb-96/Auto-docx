@@ -32,7 +32,9 @@ def run(
 ):
     if ticket_tree_src is not None:
         try:
-            loaded_ticket_tree = get_ticket_tree_structure(ticket_tree_src=ticket_tree_src)
+            loaded_ticket_tree = get_ticket_tree_structure(
+                ticket_tree_src=ticket_tree_src
+            )
         except InvalidTicketStructureError as e:
             raise InvalidTicketStructureError(
                 "Invalid ticket structure found in the ticket tree src file",

@@ -20,14 +20,13 @@ class GenericIngester:
         self.formatted_tree: Dict[str, Any] = {}
         self._node_cache = {}
         self.types_to_keys = defaultdict(list)
-    
+
     def _create_ticket_tree_node(
         self,
         ticket_type: str,
         parent: Union[TicketTree, None] = None,
     ) -> TicketTree:
         return TicketTree(parent=parent, ticket_type=ticket_type)
-            
 
     def find_node_in_ticket_tree(self, ticket_type: str) -> Union[TicketTree, None]:
         if ticket_type in self._node_cache:
