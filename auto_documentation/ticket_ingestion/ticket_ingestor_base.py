@@ -17,7 +17,8 @@ class GenericIngester:
         self.formatted_tree: Dict[str, Any] = {}
         self._node_cache = {}
         self.types_to_keys = defaultdict(list)
-        self.build_formatted_tree()
+        if self.ticket_tree is None:
+            self.build_tree_from_ticket_id()
 
     def find_node_in_ticket_tree(self, ticket_type: str) -> Union[TicketTree, None]:
         if ticket_type in self._node_cache:
@@ -97,6 +98,9 @@ class GenericIngester:
             result += self.parse_markdown(child_entry, heading_level)
             result += self.process_children(child_key, heading_level + 1)
         return result
+
+    def write_tree_to_yaml(self):
+        raise NotImplementedError(ERROR_MESSAGE)
 
     def build_tree_from_ticket_id(self, ticket_id: str) -> None:
         # This can read a ticket id and build a tree of tests

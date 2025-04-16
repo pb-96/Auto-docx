@@ -1,5 +1,4 @@
 root:
-  parent: null
   ticket_type: Epic
   action: Description
   child:

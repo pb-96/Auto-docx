@@ -60,7 +60,7 @@ class TestBuilderPrompt(TypedDict):
 
 class TicketTree(BaseModel):
     # Basically this the model that maps from the parent ticket to the test
-    parent: Union["TicketTree", None]
+    parent: Union["TicketTree", None] = None
     ticket_type: str
     child: List["TicketTree"] = []
     action: ActionType = ActionType.DESCRIPTION

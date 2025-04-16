@@ -52,6 +52,7 @@ def run(
 
     match run_type:
         case RunType.TEST_CREATE:
+            ticket_src_cls.build_formatted_tree()
             prompts = PromptBuilder(
                 ticket_ingester=ticket_src_cls,
                 output_file_path=output_file_path,
@@ -59,7 +60,7 @@ def run(
             write_prompt_to_file(prompts, output_file_path)
         case RunType.BUILD_TREE:
             # Write the ticket tree to yaml
-            ticket_tree = ticket_src_cls.build_tree_from_ticket_id(parent_ticket_id)
+            ...
             # Would need to write the ticket tree to yaml
         case RunType.GEN_DOCS:
             pass
