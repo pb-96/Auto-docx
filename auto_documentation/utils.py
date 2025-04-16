@@ -3,6 +3,7 @@ from typing import Generator, Dict, Any, Union, List
 import yaml
 from pathlib import Path
 import jsonlines
+from auto_documentation.custom_exceptions import CyclicTicketRelationshipError
 
 
 def ticket_tree_is_testable(ticket_tree: TicketTree) -> bool:
@@ -73,6 +74,10 @@ def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree:
         parent.child.append(as_ticket)
         parent = as_ticket
         children = next_children
+
+    # Check for cycles in the ticket tree
+    if as_ticket_tree.has_cycle():
+        raise CyclicTicketRelationshipError("Cyclic ticket relationship detected in the YAML configuration")
 
     return as_ticket_tree
 
