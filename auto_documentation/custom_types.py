@@ -68,40 +68,6 @@ class TicketTree(BaseModel):
     def __init__(self, **data):
         super().__init__(**data)
 
-    def has_cycle(self) -> bool:
-        """
-        Check if the ticket tree contains any cycles.
-        Returns True if a cycle is detected, False otherwise.
-        """
-        visited = set()
-        
-        def dfs(node: "TicketTree", path: Set[str]) -> bool:
-            # If we've seen this node type in the current path, we have a cycle
-            if node.ticket_type in path:
-                return True
-                
-            # Add the current node to the path
-            path.add(node.ticket_type)
-            
-            # If we've already fully explored this node, no cycle
-            if node.ticket_type in visited:
-                path.remove(node.ticket_type)
-                return False
-                
-            # Mark as visited
-            visited.add(node.ticket_type)
-            
-            # Check all children
-            for child in node.child:
-                if dfs(child, path):
-                    return True
-                    
-            # Remove from path before backtracking
-            path.remove(node.ticket_type)
-            return False
-            
-        return dfs(self, set())
-        
     def relationship_pointer(self, string: str, indent: int = 0):
         left = "-" * indent
         return f"{left}>{string}\n"
