@@ -4,7 +4,6 @@ from auto_documentation.custom_types import ActionType, TicketTree, TicketDict
 from collections import deque
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from dynaconf import Dynaconf
-from auto_documentation.custom_exceptions import CyclicTicketRelationshipError
 
 
 class IngestJira(GenericIngester):
@@ -132,13 +131,6 @@ class IngestJira(GenericIngester):
 
             if not has_children:
                 current_node.action = ActionType.TEST
-
-        # Check for cycles in the ticket tree
-        if parent_node.has_cycle():
-            raise CyclicTicketRelationshipError(
-                "Cyclic ticket relationship detected", 
-                ticket_id=self.parent_ticket_id
-            )
 
         self.ticket_tree = parent_node
         return parent_node
