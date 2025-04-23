@@ -19,7 +19,7 @@ please name the gherkin file as {src_folder}/{test_name}.feature
 
 please return both the python code and Cucumber file as string in the following dictionary format ->
 
-    pyhton_code: python_code,
+    python_code: python_code,
     Cucumber_file: Cucumber_file_contents
     output_path: {src_folder}
     key: {test_name}
