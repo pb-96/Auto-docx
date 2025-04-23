@@ -1,6 +1,6 @@
 from docx import Document
 from pathlib import Path
-from typing import Union
+from typing import Union, cast
 from auto_documentation.markdown_converter.html_validator import HtmlNode, SupportedTags
 
 
@@ -49,6 +49,7 @@ class HtmlToWordConverter:
                     paragraph = self.doc.add_paragraph()
                     text = child.content
                     paragraph.add_run(text)
+                    
 
                 case SupportedTags.TABLE:
                     table = self.doc.add_table()
@@ -79,7 +80,11 @@ class HtmlToWordConverter:
                     SupportedTags.SPAN,
                     SupportedTags.STRONG,
                 ):
-                    ...
+                    if parent_element is None:
+                        ...
+                    else:
+                        parent_element = cast(Document.Paragraph, parent_element)
+                        parent_element
 
             if child.children:
                 self.recursive_convert(child, parent_element=parent_element)
@@ -98,4 +103,5 @@ class HtmlToWordConverter:
 
     def convert_to_bytes(self): ...
 
-    def save_to_file(self, file_path: Union[Path, str]): ...
+    def save_to_file(self, file_path: Union[Path, str]):
+        self.doc.save(file_path)
