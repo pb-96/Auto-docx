@@ -12,6 +12,8 @@ from auto_documentation.utils import (
 from dynaconf import Dynaconf
 from auto_documentation.prompt_builder.prompt_builder import PromptBuilder
 from auto_documentation.test_runner.test_runner import TestRunner
+from auto_documentation.convert_to_file.to_pdf import HtmlToPdfConverter
+from auto_documentation.convert_to_file.to_word import HtmlToWordConverter
 
 logger = logging.getLogger(__name__)
 
