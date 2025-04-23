@@ -2,7 +2,6 @@ from docx import Document
 from pathlib import Path
 from typing import Union
 from auto_documentation.markdown_converter.html_validator import HtmlNode, SupportedTags
-from enum import Enum
 
 
 class HtmlToWordConverter:
@@ -10,7 +9,6 @@ class HtmlToWordConverter:
         self,
         html_file_path: Union[Path, str, None],
         html_node: Union[HtmlNode, None],
-        supported_tags: Union[SupportedTags, Enum],
         test_output_path: Union[Path, str, None],
     ):
         self.html_file_path = html_file_path
@@ -21,6 +19,9 @@ class HtmlToWordConverter:
 
         if self.html_file_path and self.html_node is None:
             self.open_html_file()
+
+        self.convert()
+        self.save_to_file(self.test_output_path)        
 
     def open_html_file(self):
         if not self.html_file_path.absolute():

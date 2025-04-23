@@ -14,6 +14,8 @@ from auto_documentation.prompt_builder.prompt_builder import PromptBuilder
 from auto_documentation.test_runner.test_runner import TestRunner
 from auto_documentation.convert_to_file.to_pdf import HtmlToPdfConverter
 from auto_documentation.convert_to_file.to_word import HtmlToWordConverter
+from auto_documentation.markdown_converter.markdown import parse as md_parse
+from auto_documentation.markdown_converter.html_validator import HTMLProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -85,11 +87,17 @@ def run(
             if document_type is None:
                 raise ValueError("Document type is required")
 
+            md = ticket_src_cls.get_ticket_tree_as_markdown()
+            as_html_tree = md_parse(md)
+            valid_html = HTMLProcessor(as_html_tree)
+
             match document_type:
                 case "pdf":
                     pass
                 case "word":
-                    pass
+                    HtmlToWordConverter(
+                        html_node=valid_html, test_output_path=output_file_path
+                    )
                 case _:
                     raise ValueError("Unsupported document type")
 
