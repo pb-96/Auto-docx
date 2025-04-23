@@ -13,7 +13,6 @@ class HtmlToWordConverter:
     ):
         self.html_file_path = html_file_path
         self.html_node = html_node
-        self.supported_tags = SupportedTags
         self.test_output_path = test_output_path
         self.doc = Document()
 
@@ -36,14 +35,54 @@ class HtmlToWordConverter:
         raw_data = self.html_file_path.read_text()
         self.html_node = HtmlNode(raw_data)
 
-    def recursive_convert(self, node: HtmlNode):
+    def recursive_convert(self, node: HtmlNode, parent_element: None):
         for child in node.children:
             match child.tag:
-                case ():
+                case (SupportedTags.HEADER, SupportedTags.BODY):
+                    continue
+                case (SupportedTags.BR, SupportedTags.HR):
+                    self.doc.add_page_break()
+                case (
+                    SupportedTags.P,
+                    SupportedTags.DIV,
+                ):
+                    paragraph = self.doc.add_paragraph()
+                    text = child.content
+                    paragraph.add_run(text)
+
+                case SupportedTags.TABLE:
+                    table = self.doc.add_table()
+                case SupportedTags.TH:
+                    ...
+                case SupportedTags.TR:
+                    ...
+                case SupportedTags.LI:
+                    ...
+                case SupportedTags.UL:
+                    ...
+                case (
+                    SupportedTags.H1,
+                    SupportedTags.H2,
+                    SupportedTags.H3,
+                    SupportedTags.H4,
+                    SupportedTags.H5,
+                    SupportedTags.H6,
+                ):
+                    ...
+                case SupportedTags.A:
+                    ...
+                case SupportedTags.IMG:
+                    # Content here would have to be bytes
+                    self.doc.add_picture(child.content)
+                case (
+                    SupportedTags.EM,
+                    SupportedTags.SPAN,
+                    SupportedTags.STRONG,
+                ):
                     ...
 
             if child.children:
-                self.recursive_convert(child)
+                self.recursive_convert(child, parent_element=parent_element)
 
     def convert(self):
         try:
