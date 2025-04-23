@@ -34,6 +34,7 @@ def run(
     ticket_tree_src: Union[FileType, None],
     parent_ticket_id: str,
     output_file_path: Union[str, None],
+    document_type: Union[str, None],
 ):
     if ticket_tree_src is not None:
         try:
@@ -73,10 +74,22 @@ def run(
             # First run tests -> then build the docs
             ticket_src_cls.build_formatted_tree()
             testable_keys = find_testable_ticket(ticket_src_cls)
-            test_runner = TestRunner(
-                src_folder=ticket_src_cls.src_folder,
-                testable_keys=testable_keys,
-            )
+            # Find a way to collect the output of the tests Here
+            # test_runner = TestRunner(
+            #     src_folder=ticket_src_cls.src_folder,
+            #     testable_keys=testable_keys,
+            # )
+            # test_runner.run_tests()
+            if document_type is None:
+                raise ValueError("Document type is required")
+
+            match document_type:
+                case "pdf":
+                    pass
+                case "word":
+                    pass
+                case _:
+                    raise ValueError("Unsupported document type")
 
 
 def init_args():
@@ -87,6 +100,7 @@ def init_args():
     parser.add_argument("--ticket-tree-src", required=True)
     parser.add_argument("--parent-ticket-id", required=True)
     parser.add_argument("--output-file-path", required=False)
+    parser.add_argument("--document-type", required=False)
     args = parser.parse_args()
     # Could throw an error here need to handle
 
@@ -99,6 +113,7 @@ def init_args():
         "ticket_tree_src": args.ticket_tree_src,
         "parent_ticket_id": args.parent_ticket_id,
         "output_file_path": args.output_file_path,
+        "document_type": args.document_type,
     }
 
 
