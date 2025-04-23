@@ -46,10 +46,13 @@ class HtmlToWordConverter:
                 self.recursive_convert(child)
 
     def convert(self):
-        # Process root node
-        self.recursive_convert(self.html_node)
-        # This mean it ran without errors
-        return True
+        try:
+            # Process root node
+            self.recursive_convert(self.html_node)
+            # This meant it ran without errors
+            return True
+        except Exception as e:
+            raise e
 
     def get_doc(self):
         return self.doc
