@@ -1,0 +1,8 @@
+{
+    "pyhton_code": "from pytest_bdd import scenarios, given, when, then\nimport pytest\n\nscenarios(\"/Users/philipbyrne/aoc/markdown_parser/auto_documentation/tests/test_data/MBA-14.feature\")\n\n@given(\"the test suite has run successfully\")\ndef test_suite_run():\n    # Mock successful test run\n    assert True\n\n@when(\"the auto documentation is generated\")\ndef generate_auto_docs(tmp_path):\n    from markdown_parser.auto_documentation.generator import generate_docs\n    result = generate_docs(output_dir=tmp_path)\n    assert result.exists()\n    return result\n\n@then(\"the documentation must show the test run in a table\")\ndef check_table_in_docs(generate_auto_docs):\n    content = generate_auto_docs.read_text()\n    assert \"<table\" in content or \"|\" in content  # assuming markdown or HTML tables\n    assert \"Test Name\" in content or \"Result\" in content  # basic headers presence check\n",
+    "Cucumber_file": "Feature: Documentation includes test run table for MBA-14\n  As a developer\n  I want the test documentation to include a table showing the results\n  So that users can see what tests were executed and their outcomes\n\n  Scenario: Automatically generated docs include test run table\n    Given the test suite has run successfully\n    When the auto documentation is generated\n    Then the documentation must show the test run in a table\n",
+    "output_path": "/Users/philipbyrne/aoc/markdown_parser/auto_documentation/tests/test_data",
+    "key": "MBA-14"
+  }
+  
+  

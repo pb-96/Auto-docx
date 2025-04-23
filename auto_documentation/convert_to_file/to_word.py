@@ -37,7 +37,7 @@ class HtmlToWordConverter:
 
     def recursive_convert(self, node: HtmlNode):
         for child in node.children:
-            
+
             # Process Child Node here
             if child.children:
                 self.recursive_convert(child)

@@ -1,4 +1,4 @@
-from auto_documentation.prompt_builder.prompts import build_test_builder_prompt
+from auto_documentation.prompt_builder.prompts import test_builder_prompt
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.utils import (
     find_testable_ticket,
@@ -29,14 +29,11 @@ class PromptBuilder:
     def __init__(
         self,
         ticket_ingester: GenericIngester,
-        output_file_path: Union[str, None],
-        # Maybe could use read from a config file here ?
-        return_default_prompt: bool = False,
+        output_path: Union[str, None],
     ):
         self.prompt: Dict[str, Any] = {}
         self.ticket_ingester = ticket_ingester
-        self.output_file_path = output_file_path
-        self.return_default_prompt = return_default_prompt
+        (self.output_path,) = (output_path,)
         self.prompts = self.build_prompt()
 
     def get_ticket_description(
@@ -116,6 +113,7 @@ class PromptBuilder:
             "ticket_descriptions": ticket_descriptions,
             "test_name": child_key,
             "python_version": "3.11",
+            "src_folder": self.output_path,
         }
         return p_dict
 
@@ -134,33 +132,23 @@ class PromptBuilder:
                 upward_order, child_key, ticket_descriptions
             )
             # This allows the user to use the default prompt or the custom prompt from the output given
-            if self.return_default_prompt:
-                prompt_meta = self.build_prompt_dict(
-                    ticket_descriptions=ticket_description,
-                    ticket_tree_structure=ticket_tree_structure,
-                    parent_ticket_type=parent_key,
-                    ticket_type=ticket_type,
-                    child_key=child_key,
-                )
-                prompt = build_test_builder_prompt(prompt_meta)
-                return {
-                    child_key: {
-                        "prompt_meta": prompt_meta,
-                        "prompt": prompt,
-                    }
+            prompt_meta = self.build_prompt_dict(
+                ticket_descriptions=ticket_description,
+                ticket_tree_structure=ticket_tree_structure,
+                parent_ticket_type=parent_key,
+                ticket_type=ticket_type,
+                child_key=child_key,
+            )
+            prompt = test_builder_prompt(prompt_meta)
+            return {
+                child_key: {
+                    "prompt_meta": prompt_meta,
+                    "prompt": prompt,
                 }
-            else:
-                # Return the ticket string and the ticket tree structure
-                return {
-                    child_key: {
-                        "ticket_description": ticket_description,
-                        "ticket_tree_structure": ticket_tree_structure,
-                    }
-                }
+            }
 
         except Exception as e:
             logger.error(f"Error processing ticket {child_key}: {e}")
-            # Continue processing other tickets even if one fails
 
     def build_prompt(self) -> Generator[Tuple[TicketKey, str], None, None]:
         try:

@@ -56,6 +56,14 @@ class TestBuilderPrompt(TypedDict):
     ticket_descriptions: str
     python_version: str
     test_name: str
+    src_folder: str
+
+
+class PromptOutput(TypedDict):
+    python_code: str
+    Cucumber_file: str
+    output_path: str
+    key: str
 
 
 class TicketTree(BaseModel):

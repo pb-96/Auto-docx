@@ -77,13 +77,18 @@ def yaml_file_to_ticket_tree(yaml_dict: Dict[str, Any]) -> TicketTree:
     return as_ticket_tree
 
 
-def write_prompt_to_file(data: List[Dict[str, Any]], file_path: Union[str, Path]):
+def write_prompt_to_file(data: Dict[str, Any], file_path: Union[str, Path]):
     if isinstance(file_path, str):
         file_path = Path(file_path)
 
     # Create the directory if it doesn't exist
     file_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Write the data to a JSONL file using the jsonlines library
-    with jsonlines.open(file_path, mode="w") as writer:
-        writer.write_all(data)
+    for _d in data:
+        if _d is None:
+            continue
+        key = next(iter(_d))
+        value = _d[key]
+        full_path = file_path / f"{key}.jsonl"
+        with jsonlines.open(full_path, mode="w") as writer:
+            writer.write({key: value})

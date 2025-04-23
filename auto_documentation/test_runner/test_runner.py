@@ -24,6 +24,5 @@ class TestRunner:
 
     def build_test_paths(self) -> list[Path]:
         return [self.src_folder / key for key in self.testable_keys]
-    
-    def run_tests(self) -> None:
-        ...
+
+    def run_tests(self) -> None: ...

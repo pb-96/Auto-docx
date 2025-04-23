@@ -4,10 +4,15 @@ from typing import Union
 from auto_documentation.custom_exceptions import InvalidTicketStructureError
 from auto_documentation.custom_types import RunType, FileType, TicketSource
 from auto_documentation.ticket_ingestion.jira_main import IngestJira
-from auto_documentation.utils import get_ticket_tree_structure, write_prompt_to_file, find_testable_ticket
+from auto_documentation.utils import (
+    get_ticket_tree_structure,
+    write_prompt_to_file,
+    find_testable_ticket,
+)
 from dynaconf import Dynaconf
 from auto_documentation.prompt_builder.prompt_builder import PromptBuilder
 from auto_documentation.test_runner.test_runner import TestRunner
+
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +64,7 @@ def run(
             ticket_src_cls.build_formatted_tree()
             prompts = PromptBuilder(
                 ticket_ingester=ticket_src_cls,
-                output_file_path=output_file_path,
+                output_path=output_file_path,
             ).build_prompt()
             write_prompt_to_file(prompts, output_file_path)
         case RunType.BUILD_TREE:
