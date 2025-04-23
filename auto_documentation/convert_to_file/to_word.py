@@ -21,7 +21,7 @@ class HtmlToWordConverter:
             self.open_html_file()
 
         self.convert()
-        self.save_to_file(self.test_output_path)        
+        self.save_to_file(self.test_output_path)
 
     def open_html_file(self):
         if not self.html_file_path.absolute():
@@ -38,8 +38,10 @@ class HtmlToWordConverter:
 
     def recursive_convert(self, node: HtmlNode):
         for child in node.children:
+            match child.tag:
+                case ():
+                    ...
 
-            # Process Child Node here
             if child.children:
                 self.recursive_convert(child)
 

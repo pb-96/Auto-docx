@@ -93,7 +93,9 @@ def run(
 
             match document_type:
                 case "pdf":
-                    pass
+                    HtmlToPdfConverter(
+                        html_node=valid_html, test_output_path=output_file_path
+                    )
                 case "word":
                     HtmlToWordConverter(
                         html_node=valid_html, test_output_path=output_file_path
