@@ -79,7 +79,6 @@ def run(
             # First run tests -> then build the docs
             ticket_src_cls.build_formatted_tree()
             testable_keys = find_testable_ticket(ticket_src_cls)
-            # Find a way to collect the output of the tests Here
             test_runner = TestRunner(
                 src_folder=test_folder,
                 testable_keys=testable_keys,
@@ -99,7 +98,7 @@ def run(
                     )
                 case "word":
                     HtmlToWordConverter(
-                        html_node=valid_html, test_output_path=output_file_path
+                        html_node=valid_html.root, test_output_path=output_file_path
                     )
                 case _:
                     raise ValueError("Unsupported document type")
