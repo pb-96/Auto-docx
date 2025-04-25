@@ -7,9 +7,9 @@ from auto_documentation.markdown_converter.html_validator import HtmlNode, Suppo
 class HtmlToWordConverter:
     def __init__(
         self,
-        html_file_path: Union[Path, str, None],
         html_node: Union[HtmlNode, None],
         test_output_path: Union[Path, str, None],
+        html_file_path: Union[Path, str, None] = None,
     ):
         self.html_file_path = html_file_path
         self.html_node = html_node
@@ -49,7 +49,6 @@ class HtmlToWordConverter:
                     paragraph = self.doc.add_paragraph()
                     text = child.content
                     paragraph.add_run(text)
-                    
 
                 case SupportedTags.TABLE:
                     table = self.doc.add_table()
@@ -92,7 +91,7 @@ class HtmlToWordConverter:
     def convert(self):
         try:
             # Process root node
-            self.recursive_convert(self.html_node)
+            # self.recursive_convert(self.html_node)
             # This meant it ran without errors
             return True
         except Exception as e:

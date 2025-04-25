@@ -1,4 +1,4 @@
-from typing import Dict, Any, Union, List, Set
+from typing import Dict, Any, Union, List, Set, cast
 from jira import JIRA
 from auto_documentation.custom_types import ActionType, TicketTree, TicketDict
 from collections import deque
@@ -46,8 +46,12 @@ class IngestJira(GenericIngester):
                 linked_keys.append(key)
         return linked_keys
 
-    def append_next(self, current_node: TicketTree, queue: deque, next_issue) -> None:
+    def append_next(
+        self, current_node: TicketTree, queue: deque, next_issue, found_key: str
+    ) -> None:
         next_children = self.get_next_children_set(current_node)
+        parent_type = current_node.parent
+
         if not next_children:
             return
 
@@ -56,23 +60,25 @@ class IngestJira(GenericIngester):
             target_key = self._is_valid_issue_link(issue_link)
             if target_key is None:
                 continue
-            ticket_name = target_key["fields"]["issuetype"]["name"]
+            ticket_type = target_key["fields"]["issuetype"]["name"]
             key = target_key.get("key")
-            if key and ticket_name and ticket_name in next_children:
+            if key:
+                continue
+            elif ticket_type in next_children:
                 next_associated_issues.append(key)
+            elif ticket_type == parent_type:
+                cast(list, self.formatted_tree[key]["children"]).append(found_key)
+                self.formatted_tree[found_key]["parent_key"] = key
+                self.formatted_tree[found_key]["parent_type"] = parent_type.ticket_type
 
         queue.extend(next_associated_issues)
 
-    def build_entry(
-        self, next_issue: Any, current_node: TicketTree, last_key: Union[str, None]
-    ) -> TicketDict:
+    def build_entry(self, next_issue: Any, current_node: TicketTree) -> TicketDict:
         ticket_dict: TicketDict = {
             "title": next_issue.summary,
             "description": next_issue.description,
-            "parent_type": (
-                current_node.parent.ticket_type if current_node.parent else None
-            ),
-            "parent_key": last_key,
+            "parent_type": None,
+            "parent_key": None,
             "ticket_type": current_node.ticket_type,
             "children": [],
         }
@@ -83,7 +89,7 @@ class IngestJira(GenericIngester):
             raise ValueError("Ticket tree is None")
 
         queue: deque = deque((self.parent_ticket_id,))
-        last_key = None
+
         while queue:
             key_to_query = queue.pop()
             next_issue = self.get_issue_data(key_to_query).fields
@@ -93,10 +99,9 @@ class IngestJira(GenericIngester):
             # This would mean we have to build the ticket tree from the ticket id
             current_node = self.find_node_in_ticket_tree(string_issue_type)
             self.formatted_tree[key_to_query] = self.build_entry(
-                next_issue, current_node, last_key
+                next_issue, current_node
             )
-            self.append_next(current_node, queue, next_issue)
-            last_key = key_to_query
+            self.append_next(current_node, queue, next_issue, key_to_query)
 
     def build_tree_from_ticket_id(self) -> TicketTree:
         # Get parent issue and create root node
@@ -114,9 +119,16 @@ class IngestJira(GenericIngester):
             next_key = queue.popleft()
             next_issue = self.get_issue_data(next_key)
             issue_type = str(next_issue.fields.issuetype)
+            # Last seen type could be itself -> need to fix this
             current_node = self._create_ticket_tree_node(issue_type, last_seen_type)
             last_seen_type.child.append(current_node)
-            last_seen_type = current_node
+            if (
+                last_seen_type.ticket_type != current_node.ticket_type
+                and last_seen_type.ticket_type != current_node.ticket_type
+            ):
+                # This may be to basic and will only work if the relationship
+                # is one to one
+                last_seen_type = current_node
             seen_types.add(issue_type)
             seen_parents_ids.add(next_key)
 

@@ -89,7 +89,8 @@ class GenericIngester:
             )
 
         markdown = self.parse_markdown(parent_ticket, heading_level=1)
-        markdown += self.process_children(parent_keys[0], heading_level=2)
+        for keys in parent_keys:
+            markdown += self.process_children(keys, heading_level=2)
 
         return markdown
 
@@ -146,7 +147,9 @@ class GenericIngester:
     def build_formatted_tree(self) -> None:
         raise NotImplementedError(ERROR_MESSAGE)
 
-    def append_next(self, current_node: TicketTree, queue: deque, next_issue: Any):
+    def append_next(
+        self, current_node: TicketTree, queue: deque, next_issue: Any, found_key: str
+    ):
         raise NotImplementedError(ERROR_MESSAGE)
 
     def build_entry(self, next_issue: Any, current_node: TicketTree) -> TicketDict:
