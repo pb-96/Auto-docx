@@ -91,6 +91,7 @@ class HtmlToWordConverter:
     def convert(self):
         try:
             # Process root node
+            # Turn html string into beautiful soup nodes here then parse on that 
             # self.recursive_convert(self.html_node)
             # This meant it ran without errors
             return True
