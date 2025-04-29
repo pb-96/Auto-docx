@@ -2,6 +2,7 @@ from docx import Document
 from pathlib import Path
 from typing import Union, cast
 from auto_documentation.markdown_converter.html_validator import HtmlNode, SupportedTags
+from bs4 import BeautifulSoup
 
 
 class HtmlToWordConverter:
@@ -15,12 +16,15 @@ class HtmlToWordConverter:
         self.html_node = html_node
         self.test_output_path = test_output_path
         self.doc = Document()
+        self.html_as_string = None
 
         if self.html_file_path and self.html_node is None:
             self.open_html_file()
-
+        elif self.html_node:
+            self.html_as_string = self.html_node.display_string() 
+            
         self.convert()
-        self.save_to_file(self.test_output_path)
+        # self.save_to_file(self.test_output_path)
 
     def open_html_file(self):
         if not self.html_file_path.absolute():
@@ -33,11 +37,13 @@ class HtmlToWordConverter:
             raise ValueError("HTML file path must have a .html extension")
 
         raw_data = self.html_file_path.read_text()
-        self.html_node = HtmlNode(raw_data)
+        self.html_as_string = raw_data
 
-    def recursive_convert(self, node: HtmlNode, parent_element: None):
-        for child in node.children:
-            match child.tag:
+    def recursive_convert(self, node: BeautifulSoup, parent_element: None):
+        for child in node.contents:
+            # Will need to also process siblings here
+            name = child.name
+            match name:
                 case (SupportedTags.HEADER, SupportedTags.BODY):
                     continue
                 case (SupportedTags.BR, SupportedTags.HR):
@@ -73,27 +79,24 @@ class HtmlToWordConverter:
                     ...
                 case SupportedTags.IMG:
                     # Content here would have to be bytes
-                    self.doc.add_picture(child.content)
+                    # self.doc.add_picture(child.content)
+                    ...
                 case (
                     SupportedTags.EM,
                     SupportedTags.SPAN,
                     SupportedTags.STRONG,
                 ):
-                    if parent_element is None:
-                        ...
-                    else:
-                        parent_element = cast(Document.Paragraph, parent_element)
-                        parent_element
+
+                    parent_element = cast(Document.Paragraph, parent_element)
+                    parent_element
 
             if child.children:
                 self.recursive_convert(child, parent_element=parent_element)
 
     def convert(self):
         try:
-            # Process root node
-            # Turn html string into beautiful soup nodes here then parse on that 
-            # self.recursive_convert(self.html_node)
-            # This meant it ran without errors
+            as_soup = BeautifulSoup(self.html_as_string, "html.parser")
+            print(as_soup)
             return True
         except Exception as e:
             raise e
