@@ -79,11 +79,11 @@ def run(
             # First run tests -> then build the docs
             ticket_src_cls.build_formatted_tree()
             testable_keys = find_testable_ticket(ticket_src_cls)
-            # test_runner = TestRunner(
-            #     src_folder=test_folder,
-            #     testable_keys=testable_keys,
-            # )
-            # test_runner.run_tests()
+            test_runner = TestRunner(
+                src_folder=test_folder,
+                testable_keys=testable_keys,
+            )
+            test_runner.run_tests()
             if document_type is None:
                 raise ValueError("Document type is required")
 
