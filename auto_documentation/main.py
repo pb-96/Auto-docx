@@ -28,7 +28,9 @@ settings = Dynaconf(
 )
 
 
-def generate_html_for_docs(ticket_src_cls: GenericIngester, test_runner: TestRunner) -> HTMLProcessor:
+def generate_html_for_docs(
+    ticket_src_cls: GenericIngester, test_runner: TestRunner
+) -> HTMLProcessor:
     ticket_src_cls.build_formatted_tree()
     testable_keys = find_testable_ticket(ticket_src_cls)
     test_runner.run_tests(testable_keys)
@@ -36,6 +38,7 @@ def generate_html_for_docs(ticket_src_cls: GenericIngester, test_runner: TestRun
     as_html_tree = md_parse(md)
     valid_html = HTMLProcessor(as_html_tree)
     return valid_html
+
 
 def run(
     ticket_tree_src: FileType,

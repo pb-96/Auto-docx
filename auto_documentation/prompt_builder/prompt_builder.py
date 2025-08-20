@@ -1,4 +1,3 @@
-from auto_documentation.prompt_builder.prompts import test_builder_prompt
 from auto_documentation.ticket_ingestion.ticket_ingestor_base import GenericIngester
 from auto_documentation.utils import (
     find_testable_ticket,
@@ -14,7 +13,7 @@ from auto_documentation.custom_exceptions import (
     PromptBuilderError,
     InvalidTicketStructureError,
 )
-from typing import Dict, List, Tuple, Any, Generator, Union
+from typing import Dict, List, Tuple, Any, Generator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -29,11 +28,11 @@ class PromptBuilder:
     def __init__(
         self,
         ticket_ingester: GenericIngester,
-        output_path: Union[str, None],
+        output_path: str,
     ):
         self.prompt: Dict[str, Any] = {}
         self.ticket_ingester = ticket_ingester
-        (self.output_path,) = (output_path,)
+        self.output_path = output_path
         self.prompts = self.build_prompt()
 
     def get_ticket_description(
@@ -138,11 +137,11 @@ class PromptBuilder:
                 ticket_type=ticket_type,
                 child_key=child_key,
             )
-            prompt = test_builder_prompt(prompt_meta)
+            # prompt = test_builder_prompt(prompt_meta)
             return {
                 child_key: {
                     "prompt_meta": prompt_meta,
-                    "prompt": prompt,
+                    # "prompt": prompt,
                 }
             }
 
