@@ -39,7 +39,6 @@ class PromptBuilder:
     def get_ticket_description(
         self, child_key: TicketKey, parent_key: TicketKey
     ) -> Tuple[TicketDescriptions, List[TicketKey]]:
-
         ticket_descriptions: TicketDescriptions = {}
         upward_order: List[TicketKey] = [child_key]
         lookup = child_key
@@ -87,7 +86,7 @@ class PromptBuilder:
                 [
                     SEPARATOR,
                     f"This is a {'testable ticket' if is_tester else 'parent'} of type {meta['ticket_type']}\n",
-                    f'{"This is what the test you write is based on" if is_tester else ""}\n',
+                    f"{'This is what the test you write is based on' if is_tester else ''}\n",
                     SEPARATOR,
                     f"This is the ticket name: {meta['title']}\n",
                     SEPARATOR,
@@ -169,9 +168,9 @@ class PromptBuilder:
                     f"Parent ticket type {parent_ticket_type} not found"
                 )
             parent_keys = self.ticket_ingester.types_to_keys[parent_ticket_type]
-            assert (
-                len(parent_keys) == 1
-            ), f"Expected exactly one parent key, got {len(parent_keys)}"
+            assert len(parent_keys) == 1, (
+                f"Expected exactly one parent key, got {len(parent_keys)}"
+            )
 
             parent_key = next(iter(parent_keys))
             for ticket in testable_target:

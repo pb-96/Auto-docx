@@ -10,7 +10,6 @@ ERROR_MESSAGE = "Subclasses must implement this method"
 
 
 class GenericIngester:
-
     def __init__(
         self, jira_config: Dynaconf, ticket_tree: TicketTree, parent_ticket_id: str
     ):

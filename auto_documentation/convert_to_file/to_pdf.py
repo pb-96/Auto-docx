@@ -35,10 +35,6 @@ class HtmlToPdfConverter:
 
     def recursive_convert(self, node: HtmlNode):
         for child in node.children:
-            match child.type:
-                case _:
-                    raise ValueError(f"Unsupported node type: {child.type}")
-
             # Process Child Node here
             if child.children:
                 self.recursive_convert(child)

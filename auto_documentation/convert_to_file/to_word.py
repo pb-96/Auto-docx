@@ -21,8 +21,8 @@ class HtmlToWordConverter:
         if self.html_file_path and self.html_node is None:
             self.open_html_file()
         elif self.html_node:
-            self.html_as_string = self.html_node.display_string() 
-            
+            self.html_as_string = self.html_node.display_string()
+
         self.convert()
         # self.save_to_file(self.test_output_path)
 
@@ -86,7 +86,6 @@ class HtmlToWordConverter:
                     SupportedTags.SPAN,
                     SupportedTags.STRONG,
                 ):
-
                     parent_element = cast(Document.Paragraph, parent_element)
                     parent_element
 

@@ -5,7 +5,7 @@ from enum import Enum
 from pathlib import Path
 
 # Constants
-SEPARATOR = f'{"*" * 100}\n'
+SEPARATOR = f"{'*' * 100}\n"
 
 # Type definitions
 TicketKey = str
