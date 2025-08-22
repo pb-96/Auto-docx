@@ -137,11 +137,9 @@ class PromptBuilder:
                 ticket_type=ticket_type,
                 child_key=child_key,
             )
-            # prompt = test_builder_prompt(prompt_meta)
             return {
                 child_key: {
                     "prompt_meta": prompt_meta,
-                    # "prompt": prompt,
                 }
             }
 
@@ -150,7 +148,7 @@ class PromptBuilder:
 
     def build_prompt(self) -> Generator[Tuple[TicketKey, str], None, None]:
         try:
-            testable_target = [*find_testable_ticket(self.ticket_ingester.ticket_tree)]
+            testable_target = find_testable_ticket(self.ticket_ingester.ticket_tree)
             if (
                 not all((is_leaf(ticket) for ticket in testable_target))
                 or not testable_target

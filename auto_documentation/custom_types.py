@@ -1,6 +1,6 @@
 from typing import TypedDict, Optional, Dict, Any
 from pydantic import BaseModel
-from typing import List, Union, Set
+from typing import List, Union
 from enum import Enum
 from pathlib import Path
 
@@ -33,6 +33,7 @@ class RunType(str, Enum):
     GEN_DOCS = "DOX_GENERATE"
     # This can read a ticket id and build a tree of tests
     BUILD_TREE = "BUILD_TREE"
+    TEST_RUN = "RUN_TEST"
 
 
 class TicketSource(str, Enum):
@@ -72,6 +73,7 @@ class TicketTree(BaseModel):
     ticket_type: str
     child: List["TicketTree"] = []
     action: ActionType = ActionType.DESCRIPTION
+    initial_index: int = 0
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -81,17 +83,17 @@ class TicketTree(BaseModel):
         return f"{left}>{string}\n"
 
     def display_relationship(self):
-        initial_index = 0
+        initial_index = self.initial_index
         result_str = self.relationship_pointer(self.ticket_type, initial_index)
         # BFS style display
         for _child in self.child:
-            initial_index = 2
+            initial_index += 2
             result_str += self.relationship_pointer(
                 _child.ticket_type, indent=initial_index
             )
             next_children = _child.child
             if len(next_children):
-                initial_index = initial_index + 2
+                initial_index = self.initial_index + 2
                 while next_children:
                     next_child = next_children.pop()
                     result_str += self.relationship_pointer(

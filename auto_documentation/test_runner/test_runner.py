@@ -1,15 +1,27 @@
 from pathlib import Path
 from typing import Union
+from typing import Dict
 
 
-class TestRunner:
+class TestRunnerBase:
+    def validate(self) -> None:
+        raise NotImplementedError("Subclasses must implement this method")
+
+    def run_tests(self) -> None:
+        raise NotImplementedError("Subclasses must implement this method")
+
+    def build_test_paths(self) -> list[Path]:
+        raise NotImplementedError("Subclasses must implement this method")
+
+
+class TestRunnerFromFolder(TestRunnerBase):
     def __init__(self, src_folder: Union[str, Path], testable_keys: list[str]):
         self.src_folder = src_folder
         self.testable_keys = testable_keys
-        self.validate_folder()
+        self.validate()
         self.testable_paths = self.build_test_paths()
 
-    def validate_folder(self) -> None:
+    def validate(self) -> None:
         if not Path(self.src_folder).exists():
             raise FileNotFoundError(f"The folder {self.src_folder} does not exist")
         if not Path(self.src_folder).is_dir():
@@ -26,3 +38,9 @@ class TestRunner:
         return [self.src_folder / key for key in self.testable_keys]
 
     def run_tests(self) -> None: ...
+
+
+class TestRunnerFactory:
+    test_runner_instances: Dict[str, TestRunnerBase]
+
+    def __new__(cls, *args, **kwargs): ...

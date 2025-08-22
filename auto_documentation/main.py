@@ -40,7 +40,7 @@ def generate_html_for_docs(
     return valid_html
 
 
-def run(
+def build_tree(
     ticket_tree_src: FileType,
     parent_ticket_id: str,
     test_folder: Union[str, None],
